@@ -8,6 +8,7 @@ using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text.Json;
 using fh_res;
+using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -347,8 +348,10 @@ static void GetFileType(string args1, in List<Signature> signature)
 
     try
     {
-        int columnCount = 7;
-        var query = signature.Where(x => header.Contains(x.Hex)); //get all rows where JSON signature matches with a byte sequence in the header
+        int columnCount = 8;
+        var query = signature.Where(x => header.Contains(x.Hex)); //get all rows where JSON signature matches with a byte sequence in the file
+
+        //add code here to find the original offset if not found at the expected offset
 
         Console.WriteLine($"\nFile:  {args1}");
         Console.WriteLine($"Total Matches Found:  {query.Count()}");
@@ -366,10 +369,11 @@ static void GetFileType(string args1, in List<Signature> signature)
 
         foreach (Signature sig in query)
         {
+            int locatedPos=header.IndexOf(sig.Hex)/2;
             string valueAtOffset = ReadCustomByteRange(args1, sig.Offset, Convert.FromHexString(sig.Hex).Length); //get value at expected offset
             var query1 = signature.Where(x => x.Offset == sig.Offset && x.Hex == valueAtOffset && x.Name == sig.Name); //compare above value to hex value in JSON
             dataTable.Rows.Add(new object[] { query1.Any() ? "high" : "low", sig.Name, sig.Offset.ToString(), sig.Hex, 
-                HexToAscii(sig.Hex, sig.Hex.Length, true), valueAtOffset, HexToAscii(valueAtOffset, valueAtOffset.Length, true) });//add results to datatable based on above query
+                HexToAscii(sig.Hex, sig.Hex.Length, true), valueAtOffset, HexToAscii(valueAtOffset, valueAtOffset.Length, true), locatedPos });//add results to datatable based on above query
         }
 
         // sort by first column:
@@ -379,12 +383,19 @@ static void GetFileType(string args1, in List<Signature> signature)
         foreach (DataRow dRow in dataTable.Rows)  
         {
             Console.WriteLine("\n{0,-30} {1,-64}", "Probability", dRow[0].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Extension (JSON):", dRow[1].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Offset (JSON):", dRow[2].ToString()); //Hexadecimal (JSON)
-            Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (JSON):", dRow[3].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "ASCII (JSON):", dRow[4].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Value at Offset " + dRow[2].ToString() + ":", dRow[5].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
+            Console.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
+            Console.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " / " + String.Format("0x{0:X}", Convert.ToInt32(dRow[2]))); //show output in decimal and hex
+            Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
+            Console.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
+
+            if (dRow[0].ToString() == "low")
+            {
+                Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[5].ToString());
+                Console.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
+
+            }
+
+            Console.WriteLine("{0,-30} {1,-64}", "Located Offset:", dRow[7].ToString());
         }
     }
     catch (InvalidOperationException)
