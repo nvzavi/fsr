@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Reflection;
@@ -346,25 +347,51 @@ static void GetFileType(string args1, in List<Signature> signature)
 
     try
     {
-        int outputCounter = 0;
+        //int outputCounter = 0;
+        int columnCount = 7;
         var query = signature.Where(x => header.Contains(x.Hex)); //get all rows where JSON signature matches with a byte sequence in the header
 
         Console.WriteLine($"\nFile:  {args1}");
         Console.WriteLine($"Total Matches Found:  {query.Count()}");
 
-        string[,] stagingOuput = new string[query.Count(), 6];
+        string[,] stagingOuput = new string[query.Count(), columnCount];
+        DataTable dataTable = new DataTable();
+        DataColumn dataColumn;
+
+        for (int i = 0; i <= columnCount-1; i++)
+        {
+            dataColumn = new DataColumn();
+            dataColumn.ColumnName = "Col" + i;
+            dataTable.Columns.Add(dataColumn);
+            //dataColumn.DataType = typeof(int);
+        }
+
+
+
         foreach (Signature sig in query)
         {
             string valueAtOffset = ReadCustomByteRange(args1, sig.Offset, Convert.FromHexString(sig.Hex).Length); //get value at expected offset
             var query1 = signature.Where(x => x.Offset == sig.Offset && x.Hex == valueAtOffset && x.Name == sig.Name); //compare above value to hex value in JSON
-            stagingOuput[outputCounter, 0] = query1.Any() ? "high" : "low"; //if above values are equal then the chance of extension being matched is high 
-            stagingOuput[outputCounter, 1] = sig.Name;
-            stagingOuput[outputCounter, 2] = sig.Offset.ToString();
-            stagingOuput[outputCounter, 3] = sig.Hex;
-            stagingOuput[outputCounter, 5] = HexToAscii(sig.Hex, sig.Hex.Length, true); //look at removing the true ie third argument
-            stagingOuput[outputCounter, 4] = valueAtOffset;
-            stagingOuput[outputCounter, 5] = HexToAscii(valueAtOffset, valueAtOffset.Length, true);
-            outputCounter++;
+
+            //DataRow row = dataTable.NewRow();
+            //row[0] = "1";//query1.Any() ? "high" : "low";
+            //row[1] = sig.Name;
+            //row[2] = sig.Offset.ToString();
+            //row[3] = sig.Hex;
+            //row[4] = HexToAscii(sig.Hex, sig.Hex.Length, true);//look at removing the true ie third argument
+            //row[5] = valueAtOffset;
+            //row[6] = HexToAscii(valueAtOffset, valueAtOffset.Length, true);
+
+            dataTable.Rows.Add(new object[] { query1.Any() ? "high" : "low", sig.Name, sig.Offset.ToString(), sig.Hex, HexToAscii(sig.Hex, sig.Hex.Length, true), valueAtOffset, HexToAscii(valueAtOffset, valueAtOffset.Length, true) });
+
+            //stagingOuput[outputCounter, 0] = query1.Any() ? "high" : "low"; //if above values are equal then the chance of extension being matched is high 
+            //stagingOuput[outputCounter, 1] = sig.Name;
+            //stagingOuput[outputCounter, 2] = sig.Offset.ToString();
+            //stagingOuput[outputCounter, 3] = sig.Hex;
+            //stagingOuput[outputCounter, 4] = HexToAscii(sig.Hex, sig.Hex.Length, true); //look at removing the true ie third argument
+            //stagingOuput[outputCounter, 5] = valueAtOffset;
+            //stagingOuput[outputCounter, 6] = HexToAscii(valueAtOffset, valueAtOffset.Length, true);
+            //outputCounter++;
             //Console.WriteLine($"\nProbability:  {(query1.Any() ? "high" : "low")}");
             //Console.WriteLine("{0,-15} {1,-64}", "Hexadecimal:", sig.Hex);
             //Console.WriteLine("{0,-15} {1,-64}", "Offset:", sig.Offset);
@@ -372,15 +399,21 @@ static void GetFileType(string args1, in List<Signature> signature)
             //Console.WriteLine("{0,-15} {1,-64}", "Extension:", sig.Name);
         }
 
-        //SOrt Array here
+        // sort by third column:
+        dataTable.DefaultView.Sort = "Col0";
+        dataTable = dataTable.DefaultView.ToTable();
+        //// sort by column name, descending:
+        //sortedrows = dt.Select("", "COLUMN3 DESC");
 
         for (int i = 0; i < stagingOuput.GetLength(0) - 1; i++)
         {
-            Console.WriteLine("\n{0,-15} {1,-64}", "Probability", stagingOuput[i, 0]);
-            Console.WriteLine("{0,-15} {1,-64}", "Extension (JSON):", stagingOuput[i, 1]);
-            Console.WriteLine("{0,-15} {1,-64}", "Hexadecimal (JSON):", stagingOuput[i, 2]);
-            Console.WriteLine("{0,-15} {1,-64}", "Offset (JSON):", stagingOuput[i, 3]);
-            Console.WriteLine("{0,-15} {1,-64}", "ASCII (JSON):", stagingOuput[i, 4]); 
+            Console.WriteLine("\n{0,-30} {1,-64}", "Probability", stagingOuput[i, 0]);
+            Console.WriteLine("{0,-30} {1,-64}", "Extension (JSON):", stagingOuput[i, 1]);
+            Console.WriteLine("{0,-30} {1,-64}", "Offset (JSON):", stagingOuput[i, 2]); //Hexadecimal (JSON)
+            Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (JSON):", stagingOuput[i, 3]);
+            Console.WriteLine("{0,-30} {1,-64}", "ASCII (JSON):", stagingOuput[i, 4]);
+            Console.WriteLine("{0,-30} {1,-64}", "Value at Offset " + stagingOuput[i, 2] + ":", stagingOuput[i, 5]);
+            Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + stagingOuput[i, 2] + ":", stagingOuput[i, 6]);
         }
     }
     catch (InvalidOperationException)
