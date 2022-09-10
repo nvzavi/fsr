@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\source\\repos\\fh_res\\fh_res\\fh_res.csproj": {}
+    "C:\\Users\\Admin\\Documents\\repos\\fh_res\\fh_res\\fh_res.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\source\\repos\\fh_res\\fh_res\\fh_res.csproj": {
+    "C:\\Users\\Admin\\Documents\\repos\\fh_res\\fh_res\\fh_res.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\source\\repos\\fh_res\\fh_res\\fh_res.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Documents\\repos\\fh_res\\fh_res\\fh_res.csproj",
         "projectName": "fh_res",
-        "projectPath": "C:\\Users\\Admin\\source\\repos\\fh_res\\fh_res\\fh_res.csproj",
+        "projectPath": "C:\\Users\\Admin\\Documents\\repos\\fh_res\\fh_res\\fh_res.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\source\\repos\\fh_res\\fh_res\\obj\\",
+        "outputPath": "C:\\Users\\Admin\\Documents\\repos\\fh_res\\fh_res\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

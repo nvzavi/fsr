@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 //Declare full path to signature JSON file
 //JSON retrieved from https://github.com/qti3e renamed file to signatures.json
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\signatures.json";
-
+//update
 //Declare list type signature into which the magic contents will be loaded
 List<Signature> signature = new();
 
