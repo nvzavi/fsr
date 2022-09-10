@@ -1,0 +1,146 @@
+//read only 4 bytes from the file
+
+using System.Reflection.PortableExecutable;
+
+//Declare full path to magic text file
+const string headerFilePath = @"C:\Users\Admin\Desktop\magic.txt";
+
+//Declare list type headers into which the magic contents will be loaded
+List<Headers> headers = new List<Headers>();
+
+//Load magic text contents into list headers
+Load_Headers(headerFilePath, ref headers);
+
+////Display File Type
+//string argFilePath = "C:\\Users\\Admin\\Desktop\\text.xlsx";//args[1];
+//GetFileType(argFilePath, ref headers);
+
+//Patch the file with the selected header from the header list
+string argFilePath = "C:\\Users\\Admin\\Desktop\\text.xlsx";//args[0];
+PatchBytes(argFilePath, "5", ref headers);
+
+////Display headers list
+//DisplayHeaders(ref headers);
+
+//if (args[0] == "ft") { GetFileType(); }
+//else if (args[0] == "pb") { PatchBytes(args[1]); }
+//else if (args[0] == "dh") { DisplayHeaders(); }
+
+///<summary>
+///Load headers into the header list
+/// </summary>
+static void Load_Headers(string headerListFilePath, ref List<Headers> headersList)
+{
+    //var magicBytes = File.ReadAllLines("C:\\Users\\Admin\\Desktop\\magic.txt");
+    var magicBytes = File.ReadAllLines(@headerListFilePath);
+    foreach (var magic in magicBytes)
+    {
+        string[] stagingArray = magic.Split(new Char[] { ',' }).ToArray();
+        headersList.Add(new Headers() { HexValues = stagingArray[0], Mnemonic = stagingArray[1], Type = stagingArray[2] });
+    }
+}
+
+
+/// <summary>
+/// Patch header from offset 0
+/// </summary> 
+static void PatchBytes(string args1, string args2, ref List<Headers> headersList)
+{
+    //var magicBytes = File.ReadAllLines("C:\\Users\\Admin\\Desktop\\magic.txt");
+    //List<Headers> headers = new List<Headers>();
+    //foreach (var magic in magicBytes)
+    //{
+    //    string[] stagingArray = magic.Split(new Char[] { ',' }).ToArray();
+    //    headers.Add(new Headers() { HexValues = stagingArray[0], Mnemonic = stagingArray[1], Type = stagingArray[2] });
+    //}
+    
+    using FileStream fs = File.OpenWrite(args1);//@argFilePath
+    
+    int indexTemp = Convert.ToInt32(args2);
+    var data = headersList[indexTemp-1].HexValues.Replace(" ", ""); //"504B";//args[1];
+    byte[] buffer = Convert.FromHexString(data);
+    fs.Write(buffer, 0, buffer.Length);
+    Console.WriteLine("Patch Applied!!!");
+}
+
+/// <summary>
+/// Display headers list
+/// </summary>
+static void DisplayHeaders(ref List<Headers> headersList)
+{
+    //var magicBytes = File.ReadAllLines("C:\\Users\\Admin\\Desktop\\magic.txt");
+    //List<Headers> headers = new List<Headers>();
+    //foreach (var magic in magicBytes)
+    //{
+    //    string[] stagingArray = magic.Split(new Char[] { ',' }).ToArray();
+    //    headers.Add(new Headers() { HexValues = stagingArray[0], Mnemonic = stagingArray[1], Type = stagingArray[2] });
+    //}
+
+    int counter = 1;
+    foreach (Headers headers1 in headersList)
+    {
+        Console.WriteLine($"ID {counter} - {headers1}");
+        counter++;
+    }
+}
+
+/// <summary>
+/// Display File Type
+/// </summary>
+static void GetFileType(string args1, ref List<Headers> headersList)
+{
+    const int HEADER_SIZE = 64;
+
+    byte[] bytesFile = new byte[HEADER_SIZE];
+
+    //using (FileStream fs = File.OpenRead(@"C:\Users\Admin\Desktop\text.xlsx"))
+    using (FileStream fs = File.OpenRead(args1))//@argFilePath
+    {
+        fs.Read(bytesFile, 0, HEADER_SIZE);
+        fs.Close();
+    }
+
+    //Convert the byte file to its hex string representation
+    string header = BitConverter.ToString(bytesFile).Replace("-", " ");
+
+    Console.WriteLine("\n-----------------------------------------------------------");
+    //Console.WriteLine("Identified current header:\n  " + header);
+
+    //var magicBytes = File.ReadAllLines("C:\\Users\\Admin\\Desktop\\magic.txt");
+    //List<Headers> headers = new List<Headers>();
+    //foreach (var magic in magicBytes)
+    //{
+    //    string[] stagingArray = magic.Split(new Char[] { ',' }).ToArray();
+    //    headers.Add(new Headers() { HexValues= stagingArray[0], Mnemonic= stagingArray[1], Type= stagingArray[2] });
+    //}
+    try
+    {
+        var query = headersList.Where(x => header.StartsWith(x.HexValues)).First();
+        Console.WriteLine("Header Located:  " + query.HexValues + "\nMnemonic:  " + query.Mnemonic + "\nType:  " + query.Type);
+    }
+    catch (InvalidOperationException)
+    {
+        Console.WriteLine("Cannot find header");
+        Console.WriteLine("Press enter to exit....");
+        Console.ReadLine();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Error info:" + ex.Message);
+        Console.WriteLine("Press enter to exit....");
+        Console.ReadLine();
+    }
+    Console.WriteLine("\n-----------------------------------------------------------");
+}
+
+class Headers
+{
+    public string HexValues { get; set; }   
+    public string Mnemonic { get; set; }
+    public string Type { get; set; }
+
+    public override string ToString()
+    {
+        return "Value: " + HexValues + " / " + Mnemonic + " / " + Type;
+    }
+}
