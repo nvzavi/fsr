@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections;
 using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -22,6 +23,14 @@ List<Signature> signature = new();
 
 //Load magic text contents into signature object
 LoadJson(signatureFilePath, ref signature); //ref used as it can be modified
+
+//string sample = "1234518910000";
+//foreach (var samp in func("1",sample))
+//{
+//    Console.WriteLine(samp);
+//}
+
+
 GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", in signature); //in is cannot be changed
 //DisplayHeaders_SearchByExtension("lha", ref signature); //id 16 has na offset of 2
 //PatchBytes("C:\\Users\\Admin\\Desktop\\text.xlsx", "16", ref signature);
@@ -327,12 +336,24 @@ static void byteCarver_Offset(string filePath, string startingOffSet, string end
     }
 }
 
+static IEnumerable func(string searchTerm, string searchStr)
+{
+    int searchPos = 0;
+    int retVal= searchStr.IndexOf(searchTerm, searchPos);
+    while (retVal!=-1)
+    {
+        yield return retVal;
+        searchPos = retVal + searchTerm.Length;
+        retVal = searchStr.IndexOf(searchTerm, searchPos);
+    }
+}
+
 /// <summary>
 /// Display File Type
 /// </summary>
 static void GetFileType(string args1, in List<Signature> signature)
 {
-    int headerSize = signature.Max(t=>t.Offset) + 1; //read 1 byte passed the end
+    int headerSize = signature.Max(t=>t.Offset) + 20; //read 20 byte passed the end
     byte[] bytesFile = new byte[headerSize];
 
     using (FileStream fs = File.OpenRead(args1))//@argFilePath
@@ -367,9 +388,30 @@ static void GetFileType(string args1, in List<Signature> signature)
             dataTable.Columns.Add(dataColumn);
         }
 
-        foreach (Signature sig in query)
+        foreach (Signature sig in query) //loop through all matched records and update datatable with additional attributes locatedPos
         {
-            int locatedPos=header.IndexOf(sig.Hex)/2;
+            //get the current offset within the byte sequence
+            string locatedPos = string.Empty;
+            int posCounter = 0;
+
+            foreach (var samp in func(sig.Hex, header))
+            {
+                if (posCounter == 0)
+                {
+                    locatedPos = (Convert.ToInt32(samp) / 2).ToString();//(Convert.ToInt32(samp) / 2)==sig.Offset ? (Convert.ToInt32(samp) / 2).ToString() + "<--match": (Convert.ToInt32(samp) / 2).ToString();
+                }
+                else if (posCounter<=5)
+                {
+                    locatedPos = locatedPos + " / " + Convert.ToInt32(samp) / 2;
+                }
+                else
+                {
+                    locatedPos = locatedPos + " ***";
+                    break;
+                }       
+                posCounter++;
+            }
+                      
             string valueAtOffset = ReadCustomByteRange(args1, sig.Offset, Convert.FromHexString(sig.Hex).Length); //get value at expected offset
             var query1 = signature.Where(x => x.Offset == sig.Offset && x.Hex == valueAtOffset && x.Name == sig.Name); //compare above value to hex value in JSON
             dataTable.Rows.Add(new object[] { query1.Any() ? "high" : "low", sig.Name, sig.Offset.ToString(), sig.Hex, 
