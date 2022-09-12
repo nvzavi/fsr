@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Security.Cryptography;
+using Newtonsoft.Json.Linq;
+using System.Globalization;
+using System.Threading.Tasks.Sources;
+using System.Diagnostics;
 
 namespace fh_res
 {
@@ -18,11 +22,11 @@ namespace fh_res
         public DateTime LastModifiedDate { get; }
         public DateTime LastAccessed { get; }
 
-        public string MD5HashValue { get; }
-        public string Sha1HashValue { get; }
-        public string Sha256HashValue { get; }
-        public string Sha384HashValue { get; }
-        public string Sha512HashValue { get; }
+        //public string MD5HashValue { get; }
+        //public string Sha1HashValue { get; }
+        //public string Sha256HashValue { get; }
+        //public string Sha384HashValue { get; }
+        //public string Sha512HashValue { get; }
 
         public LocalFile(string fullPath)
         {
@@ -32,12 +36,39 @@ namespace fh_res
             CreatedDate = GetCreatedDate();
             LastModifiedDate = GetLastModifiedDate();
             LastAccessed = GetLastAccessed();
-            MD5HashValue = GetMD5Hash();
-            Sha1HashValue = GetSHA1Hash();
-            Sha256HashValue = GetSHA256Hash();
-            Sha384HashValue = GetSHA384Hash();
-            Sha512HashValue = GetSHA512Hash();
+
+            //Stopwatch timer1 = Stopwatch.StartNew();
+
+            //MD5HashValue = GetMD5Hash();
+            //Sha1HashValue = GetSHA1Hash();
+            ////Sha256HashValue = GetSHA256Hash();
+            ////Sha384HashValue = GetSHA384Hash();
+            ////Sha512HashValue = GetSHA512Hash();
+
+            //string time1str=timer1.ElapsedMilliseconds.ToString();
+
+            //Stopwatch timer2 = Stopwatch.StartNew();
+
+            //Task<string> taskA = Task<string>.Factory.StartNew(() => GetMD5Hash());
+            //Task<string> taskB = Task<string>.Factory.StartNew(() => GetSHA1Hash());
+            ////Task<string> taskC = Task<string>.Factory.StartNew(() => GetSHA256Hash());
+            ////Task<string> taskD = Task<string>.Factory.StartNew(() => GetSHA384Hash());
+            ////Task<string> taskE = Task<string>.Factory.StartNew(() => GetSHA512Hash());
+            //Task<string>[] tasks = { taskA, taskB };
+            //Task<string>.WaitAll(tasks);
+
+            //string ans1 = taskA.Result;
+            //string ans2 = taskB.Result;
+            ////string ans3 = taskC.Result;
+            ////string ans4 = taskD.Result;
+            ////string ans5 = taskE.Result;
+
+            //string time2str = timer2.ElapsedMilliseconds.ToString();
+
+
+
         }
+
         private long GetFileSize()
         {
             long fileSize = new System.IO.FileInfo(FullPath).Length; //possible error here NULL values
@@ -75,6 +106,7 @@ namespace fh_res
                 }
             }
         }
+
 
         private string GetSHA1Hash()
         {

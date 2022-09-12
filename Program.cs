@@ -3,10 +3,12 @@ using System;
 using System.Collections;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using fh_res;
 using Microsoft.Win32.SafeHandles;
@@ -24,8 +26,11 @@ List<Signature> signature = new();
 //Load magic text contents into signature object
 LoadJson(signatureFilePath, ref signature); //ref used as it can be modified
 
-GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", 
+GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", "-1",
     in signature); //in is cannot be changed
+
+//GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", "C:\\Users\\Admin\\Desktop\\output.txt", 
+//    in signature); //in is cannot be changed
 //DisplayHeaders_SearchByExtension("lha", ref signature); //id 16 has na offset of 2
 //PatchBytes("C:\\Users\\Admin\\Desktop\\text.xlsx", "16", ref signature);
 //PatchBytesCustomRange("C:\\Users\\Admin\\Desktop\\text.xlsx", "030414", "160");
@@ -75,7 +80,7 @@ switch (args[0])
             if (File.Exists(args[1]))
             {
                 //Display File Type
-                GetFileType(args[1], in signature); //arg[1]:  File path to get type of, arg[2]:  list of headers //in used as must not be modified
+                GetFileType(args[1],"-1", in signature); //arg[1]:  File path to get type of, arg[2]:  -1 denoting an output to screen
             }
             else
             {
@@ -85,25 +90,38 @@ switch (args[0])
         }
         else if (args.Length == 3)
         {
-            if (args[2] == "--more")
+            if (File.Exists(args[1]))
             {
-                if (File.Exists(args[1]))
-                {
-                    //Display File Type
-                    GetFileType(args[1], in signature); //arg[1]:  File path to get type of, arg[2]:  list of headers //in used as must not be modified
-                    GetMoreFileDetails(args[1]);
-                }
-                else
-                {
-                    Console.WriteLine("Error:  File not Found!!!");
-                    Console.WriteLine("Usage:  -ft \"FilePath\" --more");
-                }
+                //Display File Type
+                GetFileType(args[1], args[2], in signature); //arg[1]:  File path to get type of, arg[2]:  list of headers //in used as must not be modified
+                //GetMoreFileDetails(args[1]);
             }
             else
             {
-                Console.WriteLine("Error:  Invalid argument!!!");
+                Console.WriteLine("Error:  File not Found!!!");
                 Console.WriteLine("Usage:  -ft \"FilePath\" --more");
-            }//Serach by type }
+            }
+            
+
+            //if (args[2] == "--more") //change --more to nothing ie empty
+            //{
+            //    if (File.Exists(args[1]))
+            //    {
+            //        //Display File Type
+            //        GetFileType(args[1], in signature); //arg[1]:  File path to get type of, arg[2]:  list of headers //in used as must not be modified
+            //        //GetMoreFileDetails(args[1]);
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("Error:  File not Found!!!");
+            //        Console.WriteLine("Usage:  -ft \"FilePath\" --more");
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Error:  Invalid argument!!!");
+            //    Console.WriteLine("Usage:  -ft \"FilePath\" --more");
+            //}//Serach by type }
         }
         break;
     case "-pb":
@@ -280,20 +298,19 @@ static void DisplayHeaders_SearchByHex(string keyWord, ref List<Signature> signa
 
 static void GetMoreFileDetails(string fullPath)
 {
+    //Console.SetCursorPosition(0, Console.CursorTop - 1);
     LocalFile localFile = new LocalFile(fullPath);
-    Console.WriteLine("\n----------------------------------------------------------------------------------------------");
-    Console.WriteLine("----------                   ADDITIONAL DETAILS                                   ------------");
-    Console.WriteLine("----------------------------------------------------------------------------------------------");
+    Console.WriteLine("\nFile Attributes --------------------------------------------------------------------------------");
     Console.WriteLine("{0,-15} {1,-64}", "File Name:" , localFile.Name);
     Console.WriteLine("{0,-15} {1,-64}", "File Size:" , localFile.FileSize + " bytes");
     Console.WriteLine("{0,-15} {1,-64}", "Created Date:" , localFile.CreatedDate );
     Console.WriteLine("{0,-15} {1,-64}", "Accessed Date:" , localFile.LastAccessed );
-    Console.WriteLine("{0,-15} {1,-64}", "Modified Date:", localFile.LastModifiedDate );
-    Console.WriteLine("{0,-15} {1,-64}", "MD5:", localFile.MD5HashValue);
-    Console.WriteLine("{0,-15} {1,-64}", "SHA1:" , localFile.Sha1HashValue);
-    Console.WriteLine("{0,-15} {1,-64}", "SHA256:" , localFile.Sha256HashValue);
-    Console.WriteLine("{0,-15} {1,-64}", "SHA384:" , localFile.Sha384HashValue);
-    Console.WriteLine("{0,-15} {1,-64}", "SHA512:" , localFile.Sha512HashValue);
+    Console.WriteLine("{0,-15} {1,-64}", "Modified Date:", localFile.LastModifiedDate ); 
+    //Console.WriteLine("{0,-15} {1,-64}", "MD5:", localFile.MD5HashValue);
+    //Console.WriteLine("{0,-15} {1,-64}", "SHA1:" , localFile.Sha1HashValue);
+    //Console.WriteLine("{0,-15} {1,-64}", "SHA256:" , localFile.Sha256HashValue);
+    //Console.WriteLine("{0,-15} {1,-64}", "SHA384:" , localFile.Sha384HashValue);
+    //Console.WriteLine("{0,-15} {1,-64}", "SHA512:" , localFile.Sha512HashValue);
     Console.WriteLine("----------------------------------------------------------------------------------------------");
 }
 
@@ -345,7 +362,7 @@ static IEnumerable Offetlocations(string searchTerm, string searchStr)
 /// <summary>
 /// Display File Type
 /// </summary>
-static void GetFileType(string args1, in List<Signature> signature)
+static void GetFileType(string args1, string args2, in List<Signature> signature)
 {
     //int headerSize = signature.Max(t=>t.Offset) + 20; //read 20 byte passed the end
     //byte[] bytesFile = new byte[headerSize];
@@ -362,6 +379,7 @@ static void GetFileType(string args1, in List<Signature> signature)
     Console.WriteLine("\n----------------------------------------------------------------------------------------------");
     Console.WriteLine("----------                            FILE TYPE                                   ------------");
     Console.WriteLine("----------------------------------------------------------------------------------------------");
+    Console.WriteLine("Note:  Use your favourite hex editor to view the byte sequence at the detected offset/s");
 
     try
     {
@@ -371,8 +389,10 @@ static void GetFileType(string args1, in List<Signature> signature)
         //add code here to find the original offset if not found at the expected offset
 
         Console.WriteLine($"\nFile:  {args1}");
-        Console.WriteLine($"Total Matches Found:  {query.Count()}");
+        GetMoreFileDetails(args1);
 
+        Console.WriteLine("Computing Totals...");
+        Console.WriteLine($"Total Matches Found:  {query.Count()}");
         //string[,] stagingOuput = new string[query.Count(), columnCount];
         DataTable dataTable = new DataTable();
         DataColumn dataColumn;
@@ -430,23 +450,70 @@ static void GetFileType(string args1, in List<Signature> signature)
         dataTable.DefaultView.Sort = "Col0";
         dataTable = dataTable.DefaultView.ToTable();
 
-        foreach (DataRow dRow in dataTable.Rows)  
+
+        //write output to file
+        try
         {
-            Console.WriteLine("\n{0,-30} {1,-64}", "Probability", dRow[0].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}", Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
-            Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
-
-            if (dRow[0].ToString() == "low")
+            if (args2 == "-1") //output to screen
             {
-                Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[5].ToString());
-                Console.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
+                foreach (DataRow dRow in dataTable.Rows)
+                {
+                    Console.WriteLine("\n{0,-30} {1,-64}", "Probability", dRow[0].ToString());
+                    Console.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
+                    Console.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}", 
+                        Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
+                    Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
+                    Console.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
 
+                    if (dRow[0].ToString() == "low")
+                    {
+                        Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[5].ToString());
+                        Console.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
+
+                    }
+
+                    Console.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[7].ToString());
+                }
             }
+            else //output to file
+            {
+                string fileName = args2;
+                if (File.Exists(fileName))
+                {
+                    Random random = new Random();
+                    // Create a new file name
+                    fileName = Path.GetDirectoryName(fileName) + "\\" + Path.GetFileName(fileName).Substring(0, Path.GetFileName(fileName).IndexOf(".")) + "_fhgen_" + random.Next(10000)
+                        + Path.GetFileName(fileName).Substring(Path.GetFileName(fileName).IndexOf("."));
+                }
 
-            Console.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[7].ToString());
+                using (StreamWriter sw = File.CreateText(fileName))
+                {
+                    // Add some text to file    
+                    foreach (DataRow dRow in dataTable.Rows)
+                    {
+                        sw.WriteLine("{0,-30} {1,-64}", "Probability", dRow[0].ToString());
+                        sw.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
+                        sw.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}", 
+                            Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
+                        sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
+                        sw.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
+
+                        if (dRow[0].ToString() == "low")
+                        {
+                            sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[5].ToString());
+                            sw.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
+
+                        }
+
+                        sw.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[7].ToString());
+                    }
+                }
+            }         
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }       
     }
     catch (InvalidOperationException)
     {
