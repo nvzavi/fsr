@@ -24,14 +24,8 @@ List<Signature> signature = new();
 //Load magic text contents into signature object
 LoadJson(signatureFilePath, ref signature); //ref used as it can be modified
 
-//string sample = "1234518910000";
-//foreach (var samp in func("1",sample))
-//{
-//    Console.WriteLine(samp);
-//}
-
-
-GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", in signature); //in is cannot be changed
+GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", 
+    in signature); //in is cannot be changed
 //DisplayHeaders_SearchByExtension("lha", ref signature); //id 16 has na offset of 2
 //PatchBytes("C:\\Users\\Admin\\Desktop\\text.xlsx", "16", ref signature);
 //PatchBytesCustomRange("C:\\Users\\Admin\\Desktop\\text.xlsx", "030414", "160");
@@ -336,7 +330,7 @@ static void byteCarver_Offset(string filePath, string startingOffSet, string end
     }
 }
 
-static IEnumerable func(string searchTerm, string searchStr)
+static IEnumerable Offetlocations(string searchTerm, string searchStr)
 {
     int searchPos = 0;
     int retVal= searchStr.IndexOf(searchTerm, searchPos);
@@ -344,7 +338,7 @@ static IEnumerable func(string searchTerm, string searchStr)
     {
         yield return retVal;
         searchPos = retVal + searchTerm.Length;
-        retVal = searchStr.IndexOf(searchTerm, searchPos);
+        retVal = searchStr.IndexOf(searchTerm, searchPos); 
     }
 }
 
@@ -353,11 +347,13 @@ static IEnumerable func(string searchTerm, string searchStr)
 /// </summary>
 static void GetFileType(string args1, in List<Signature> signature)
 {
-    int headerSize = signature.Max(t=>t.Offset) + 20; //read 20 byte passed the end
-    byte[] bytesFile = new byte[headerSize];
-
+    //int headerSize = signature.Max(t=>t.Offset) + 20; //read 20 byte passed the end
+    //byte[] bytesFile = new byte[headerSize];
+    byte[] bytesFile;
     using (FileStream fs = File.OpenRead(args1))//@argFilePath
     {
+        int headerSize = (int)fs.Length; //possible loss of data here FIX IT
+        bytesFile = new byte[headerSize];
         fs.Read(bytesFile, 0, headerSize); //read header into bytesfile
         fs.Close();
     }
@@ -377,7 +373,7 @@ static void GetFileType(string args1, in List<Signature> signature)
         Console.WriteLine($"\nFile:  {args1}");
         Console.WriteLine($"Total Matches Found:  {query.Count()}");
 
-        string[,] stagingOuput = new string[query.Count(), columnCount];
+        //string[,] stagingOuput = new string[query.Count(), columnCount];
         DataTable dataTable = new DataTable();
         DataColumn dataColumn;
 
@@ -393,20 +389,32 @@ static void GetFileType(string args1, in List<Signature> signature)
             //get the current offset within the byte sequence
             string locatedPos = string.Empty;
             int posCounter = 0;
+            int posValue=0;
 
-            foreach (var samp in func(sig.Hex, header))
+            //int hlen = header.Length;
+            //int retVal = header.IndexOf("47", 66696);
+
+            foreach (var offsetLoc in Offetlocations(sig.Hex, header))//sig.Hex
             {
+                if (Convert.ToInt32(offsetLoc) % 2 != 0) //if its not an even number then skip execution and proceed to next iteration :  hex found at even number only
+                {
+                    continue;
+                }
+                posValue = Convert.ToInt32(offsetLoc) / 2; //divide by 2 to get the byte value
+                //string tempOutput = posValue == sig.Offset ? (Convert.ToInt32(offsetLoc) / 2).ToString() + " <--match" : (Convert.ToInt32(offsetLoc) / 2).ToString(); //assign match string to matched offset
+                string tempOutput = posValue == sig.Offset ? String.Format("0x{0:X}", Convert.ToInt32(offsetLoc) / 2) + " <--match" : String.Format("0x{0:X}", Convert.ToInt32(offsetLoc) / 2); //assign match string to matched offset
+
                 if (posCounter == 0)
                 {
-                    locatedPos = (Convert.ToInt32(samp) / 2).ToString();//(Convert.ToInt32(samp) / 2)==sig.Offset ? (Convert.ToInt32(samp) / 2).ToString() + "<--match": (Convert.ToInt32(samp) / 2).ToString();
+                    locatedPos = tempOutput.ToString(); //for the first output return only tempOutput  String.Format("0x{0:X}", Convert.ToInt32(tempOutput));
                 }
                 else if (posCounter<=5)
                 {
-                    locatedPos = locatedPos + " / " + Convert.ToInt32(samp) / 2;
+                    locatedPos = locatedPos + " / " + tempOutput.ToString(); //for every tempOutput where the count is <6, add a trailing slash (/) 
                 }
                 else
                 {
-                    locatedPos = locatedPos + " ***";
+                    locatedPos = locatedPos + " ***"; //if count is >= 6 then insert *** to denote multiple occurences of offset in several offsets 
                     break;
                 }       
                 posCounter++;
@@ -426,7 +434,7 @@ static void GetFileType(string args1, in List<Signature> signature)
         {
             Console.WriteLine("\n{0,-30} {1,-64}", "Probability", dRow[0].ToString());
             Console.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
-            Console.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " / " + String.Format("0x{0:X}", Convert.ToInt32(dRow[2]))); //show output in decimal and hex
+            Console.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}", Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
             Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
             Console.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
 
@@ -437,7 +445,7 @@ static void GetFileType(string args1, in List<Signature> signature)
 
             }
 
-            Console.WriteLine("{0,-30} {1,-64}", "Located Offset:", dRow[7].ToString());
+            Console.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[7].ToString());
         }
     }
     catch (InvalidOperationException)
