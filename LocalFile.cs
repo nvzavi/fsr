@@ -96,7 +96,7 @@ namespace fh_res
             return Path.GetFileName(FullPath);
         }
 
-        private string GetMD5Hash()
+        public string GetMD5Hash()
         {
             using (var md5 = MD5.Create())
             {
@@ -108,7 +108,7 @@ namespace fh_res
         }
 
 
-        private string GetSHA1Hash()
+        public string GetSHA1Hash()
         {
             using (var sha = SHA1.Create())
             {
@@ -119,7 +119,7 @@ namespace fh_res
             }
         }
 
-        private string GetSHA256Hash()
+        public string GetSHA256Hash()
         {
             using (var sha = SHA256.Create())
             {
@@ -130,7 +130,7 @@ namespace fh_res
             }
         }
 
-        private string GetSHA384Hash()
+        public string GetSHA384Hash()
         {
             using (var sha = SHA384.Create())
             {
@@ -141,7 +141,7 @@ namespace fh_res
             }
         }
 
-        private string GetSHA512Hash()
+        public string GetSHA512Hash()
         {
             using (var sha = SHA512.Create())
             {
