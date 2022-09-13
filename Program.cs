@@ -25,7 +25,7 @@ string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetE
 List<Signature> signature = new();
 
 //Load magic text contents into signature object
-FileOperations.LoadJson(signatureFilePath, ref signature); //ref used as it can be modified
+FileOperations.LoadJson( signatureListFilePath: signatureFilePath, signatureList: ref signature); 
 
 
 //DisplayHeaders(ref signature);//Display all headers
@@ -62,11 +62,11 @@ switch (args[0])
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-dh --search-hex", "-dh --search-hex \"hex value\\s\"", "Must NOT be space seperated e.g. \"4D5A\"");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "Case-insensitive search");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "Contained within search e.g. \"4D\" returns 42 4D");
-        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-ft (file type)", "-ft \"FilePath\"", "Get the file type");
+        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-ft (file type)", "-ft \"fileFullPath\"", "Get the file type");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "Displays current header if no type is found");
-        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-ft (file type)", "-ft \"FilePath\" \"NewFilePath\"", "Get the file type and write results to file");
+        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-ft (file type)", "-ft \"fileFullPath\" \"fileOutputFullPath\"", "Get the file type and write results to file");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "Displays current header if no type is found");
-        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-pb (patch byte/s)", "-pb \"FilePath\" \"FileIndex\"", "Patch the header at offset specified in JSON file");
+        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-pb (patch byte/s)", "-pb \"fileFullPath\" \"searchId\"", "Patch the header at offset specified in JSON file");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "Use the -dh command to get the file index");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "NOTE:  Use at your own risk.  Always backup files first.");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-pc (patch custom)", "-pc \"FilePath\" \"hex value\\s\" \"offset\"", "Apply custom patch starting at specified offset");
@@ -78,12 +78,13 @@ switch (args[0])
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "file hashes as specified above");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
         break;
-    case "-ft":
+    case "-ft": //add proper error handling
         if (args.Length == 2) //this is write to screen
         {
-            if (File.Exists(args[1]))
+            if (File.Exists(path: args[1]))
             {
-                FileOperations.GetFileType(args[1], "-1", in signature); //arg[1]:  File path to get type of, arg[2]:  -1 denoting an output to screen
+                //optional parameter omitted...defaulting output to screen
+                FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature); 
             }
             else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
         }
@@ -93,7 +94,7 @@ switch (args[0])
             {
                 if (Directory.Exists(Path.GetDirectoryName(args[2])))
                 {
-                    FileOperations.GetFileType(args[1], args[2], in signature); //arg[1]:  File path to get type of, arg[2]:  list of headers //in used as must not be modified
+                    FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature, fileOutputFullPath: args[2]); 
                 }
                 else { Console.WriteLine("Error:  An invalid path was given in which to output the results!!!"); }           
             }
@@ -110,7 +111,7 @@ switch (args[0])
         if (args.Length == 3)
         {
             //Patch the file with the selected header from the header list
-            FileOperations.PatchBytes(args[1], args[2], ref signature);//arg[1]:  File path of file to patch, arg[2]:  Index of header to patch with, arg[3]:  list of headers
+            FileOperations.PatchBytes(fileFullPath: args[1], searchId: Convert.ToInt32(args[2]), signatureList: in signature);
         }
         else
         {
@@ -122,7 +123,7 @@ switch (args[0])
         if (args.Length==4)
         {
             //Patch the file with the selected header from the header list
-            FileOperations.PatchBytesCustomRange(args[1], args[2], args[3]);//arg[1]:  File path of file to patch, arg[2]:  Index of header to patch with, arg[3]:  list of headers
+            FileOperations.PatchBytesCustomRange(fileFullPath: args[1], hexSequence: args[2], startingHexOffSet: args[3]);
         }
         else
         {
@@ -134,7 +135,7 @@ switch (args[0])
         if (args.Length == 5)
         {
             //Read bytes at offset and return hex and ASCII values
-            FileOperations.ByteCarver_Offset(args[1], args[2], args[3], args[4]); //arg[1]: FilePath arg[2]: Offset  arg[3]: Length to read
+            FileOperations.ByteCarverByOffsets(fileFullPath: args[1], startingHexOffSet: args[2], endingHexOffSet: args[3], fileOutputFullPath: args[4]); 
         }
         else
         {
@@ -146,12 +147,12 @@ switch (args[0])
         //Display headers list
         if (args.Length == 1)
         {
-            FileOperations.DisplayHeaders(ref signature);//Display all headers
+            FileOperations.DisplayHeaders(signatureList: in signature);//Display all headers
         }
         else if (args.Length == 3)
         {
-            if (args[1] == "--search-ext") { FileOperations.DisplayHeaders_SearchByExtension(args[2], in signature); } //Serach by type }
-            else if (args[1] == "--search-hex") { FileOperations.DisplayHeaders_SearchByHex(args[2], in signature); } //Serach by hex }
+            if (args[1] == "--search-ext") { FileOperations.DisplayHeadersSearchByExtension(searchKeyWord: args[2], signatureList: in signature); } //Serach by type }
+            else if (args[1] == "--search-hex") { FileOperations.DisplayHeadersSearchByHex(searchKeyWord: args[2], signatureList: in signature); } //Serach by hex }
         }
         break;
     case "-fh":
@@ -159,7 +160,7 @@ switch (args[0])
         {
             if (File.Exists(args[1]))
             {
-                FileOperations.DisplayFileHash(args[1],args[2]);
+                FileOperations.DisplayFileHash(fileFullPath: args[1], hashType: args[2]);
             }
             else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
         }
