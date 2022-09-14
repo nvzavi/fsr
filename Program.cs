@@ -25,17 +25,16 @@ string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetE
 List<Signature> signature = new();
 
 //Load magic text contents into signature object
-FileOperations.LoadJson( signatureListFilePath: signatureFilePath, signatureList: ref signature); 
+FileOperations.LoadJson( signatureListFilePath: signatureFilePath, signatureList: ref signature);
 
 
 //DisplayHeaders(ref signature);//Display all headers
 //DisplayHeaders_SearchByExtension("docx", in signature);
 //DisplayHeaders_SearchByHex("44", in signature);
-//GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", "-1",
+//FileOperations.GetFileType("C:\\Users\\Admin\\Desktop\\text.xlsx",
 //    in signature); //in is cannot be changed
 
-//GetFileType("C:\\Users\\Admin\\Documents\\Win10_1703_English_x64.iso", "C:\\Users\\Admin\\Desktop1\\out.txt",
-//    in signature); //in is cannot be changed
+//FileOperations.GetFileType("C:\\Users\\Admin\\Desktop\\text.xlsx", in signature, "C:\\out2.txt"); //in is cannot be changed
 //DisplayHeaders_SearchByExtension("lha", ref signature); //id 16 has na offset of 2
 //PatchBytes("C:\\Users\\Admin\\Desktop\\text.xlsx", "16", ref signature);4d5a
 //byte[] temp = Convert.FromHexString("0x4d 0x5a".Replace("0x","").Replace(" ",""));
@@ -78,34 +77,10 @@ switch (args[0])
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "file hashes as specified above");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
         break;
-    case "-ft": //add proper error handling
-        if (args.Length == 2) //this is write to screen
-        {
-            if (File.Exists(path: args[1]))
-            {
-                //optional parameter omitted...defaulting output to screen
-                FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature); 
-            }
-            else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
-        }
-        else if (args.Length == 3) //this is a write to file
-        {
-            if (File.Exists(args[1]))
-            {
-                if (Directory.Exists(Path.GetDirectoryName(args[2])))
-                {
-                    FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature, fileOutputFullPath: args[2]); 
-                }
-                else { Console.WriteLine("Error:  An invalid path was given in which to output the results!!!"); }           
-            }
-            else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
-        }
-        else
-        {
-            Console.WriteLine("Error:  Please enter the required arguments!!!");
-            Console.WriteLine("Usage (Option A):  -pb \"FilePath\" ");
-            Console.WriteLine("Usage (Option B):  -pb \"FilePath\" \"NewFilePath\"");
-        }
+    case "-ft": //add validation to check if file is a path actual file e.g must not --s
+        if (args.Length==2) { FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature); }
+        else if (args.Length== 3) { FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature, fileOutputFullPath: args[2]); }
+        else { goto default; }
         break;
     case "-pb":
         if (args.Length == 3)
@@ -113,35 +88,23 @@ switch (args[0])
             //Patch the file with the selected header from the header list
             FileOperations.PatchBytes(fileFullPath: args[1], searchId: Convert.ToInt32(args[2]), signatureList: in signature);
         }
-        else
-        {
-            Console.WriteLine("Error:  Please enter the required arguments!!!");
-            Console.WriteLine("Usage:  -pb \"FilePath\" \"FileIndex\"");
-        }
+        else { goto default; }
         break;
-    case "-pc": //DONE
+    case "-pc": 
         if (args.Length==4)
         {
             //Patch the file with the selected header from the header list
             FileOperations.PatchBytesCustomRange(fileFullPath: args[1], hexSequence: args[2], startingHexOffSet: args[3]);
         }
-        else
-        {
-            Console.WriteLine("Error:  Please enter the required arguments!!!");
-            Console.WriteLine("Usage:  -pc \"FilePath\" \"hex value\\s\" \"offset\"");
-        }     
+        else { goto default; }     
         break;
-    case "-cb": //DONE
+    case "-cb": 
         if (args.Length == 5)
         {
             //Read bytes at offset and return hex and ASCII values
             FileOperations.ByteCarverByOffsets(fileFullPath: args[1], startingHexOffSet: args[2], endingHexOffSet: args[3], fileOutputFullPath: args[4]); 
         }
-        else
-        {
-            Console.WriteLine("Error:  Please enter the required arguments!!!");
-            Console.WriteLine("Usage:  -cb \"FilePath\" \"Start Offset\" \"End Offset\" \"NewFilePath\"");
-        }
+        else { goto default; }
         break;
     case "-dh":
         //Display headers list
@@ -154,6 +117,7 @@ switch (args[0])
             if (args[1] == "--search-ext") { FileOperations.DisplayHeadersSearchByExtension(searchKeyWord: args[2], signatureList: in signature); } //Serach by type }
             else if (args[1] == "--search-hex") { FileOperations.DisplayHeadersSearchByHex(searchKeyWord: args[2], signatureList: in signature); } //Serach by hex }
         }
+        else { goto default; }
         break;
     case "-fh":
         if (args.Length==3)
@@ -164,15 +128,9 @@ switch (args[0])
             }
             else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
         }
-        else
-        {
-            Console.WriteLine("Error:  Please enter the required arguments!!!");
-            Console.WriteLine("Usage:  -fh \"FilePath\" \"Hash Type\"");
-        }
+        else { goto default; }
         break;
     default:
-        Console.WriteLine("Error:  Unknown command!!!");
-        Console.WriteLine("Press enter to exit....");
-        Console.ReadLine();
+        Console.WriteLine("Error:  Please enter the required commands/arguments!!! \nUse command fh_res -h to view the help window");
         break;
 }
