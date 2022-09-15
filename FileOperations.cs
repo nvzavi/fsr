@@ -106,7 +106,7 @@ namespace fh_res
         /// <param name="signatureQuery">List from which the records will be evaluated and sorted</param>
         /// <param name="hexString">Hexadecimal string that is used for identifying matching records</param>
         /// <param name="fileFullPath">File within which the containing byte sequence will analysed</param>
-        /// <param name="signatureList">List into which the evaluated and sorted (ascending) recording will be placed</param>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
         /// <returns>Evaluated and sorted resultset</returns>
         private static DataTable FetchResultsSortedAsc(IEnumerable<Signature> signatureQuery, string hexString, string fileFullPath, in List<Signature> signatureList)
         {
@@ -175,6 +175,10 @@ namespace fh_res
             return processedDataTable;
         }
 
+        /// <summary>
+        /// Output the results of the GetFileType method to the console window
+        /// </summary>
+        /// <param name="resultsDataTable">DataTable from which the results will be extracted</param>
         private static void SendOutputToScreen(DataTable resultsDataTable)
         {
             foreach (DataRow dRow in resultsDataTable.Rows)
@@ -198,6 +202,12 @@ namespace fh_res
             }
         }
 
+        /// <summary>
+        /// Output the results of the GetFileType method to a specified file. 
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file that was analysed, evaluated and sorted (ascending)</param>
+        /// <param name="fileOutputFullPath">Full path of the file to which the results will be written</param>
+        /// <param name="resultsDataTable">DataTable from which the results will be extracted</param>
         private static void SendOutputToFile(string fileFullPath, string fileOutputFullPath, DataTable resultsDataTable)
         {
             using FileStream fs = new(fileOutputFullPath, FileMode.Append, FileAccess.Write);
@@ -224,8 +234,8 @@ namespace fh_res
 
                 if (dRow[0].ToString() == "low")
                 {
-                    sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
-                    sw.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[7].ToString());
+                    sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset:" + dRow[2].ToString() + ":", dRow[6].ToString());
+                    sw.WriteLine("{0,-30} {1,-64}", "ASCII at Offset:" + dRow[2].ToString() + ":", dRow[7].ToString());
 
                 }
 
@@ -238,8 +248,14 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Display File Type
+        /// Analyse a specified file and return a 'possible file type associations' result that is based on degree of probability (high or low). 
+        /// <para>It returns an evaluated result with the following headings:  Probability, Extension, Offset (expected), Hexadecimal (expected), Mime, Hexadecimal at Offset, ASCII at Offset, Located Offset\s</para> 
+        /// <para>If the OPTIONAL parameter 'fileOutputFullPath' is passed when calling this method, the results will be written to the specified file assigned to the 'fileOutputFullPath' parameter</para>
+        /// <para>If the OPTIONAL parameter 'fileOutputFullPath' is not passed when calling this method, a default value (-1) is passed and the results will be written to the console window.</para>
         /// </summary>
+        /// <param name="fileFullPath">Full path of the file to be analysed, evaluated and sorted (ascending)</param>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="fileOutputFullPath">OPTIONAL:  Full path of the file to which the results will be written.  Default to '-1' if no value is passed in the method call statement</param>
         public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") //fileOutputFullPath is optional
         {
             string fullHexString = String.Empty;
