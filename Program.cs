@@ -16,33 +16,14 @@ using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-
-//Declare full path to signature JSON file
 //JSON retrieved from https://github.com/qti3e renamed file to signatures.json
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\signatures.json";
-//update
-//Declare list type signature into which the magic contents will be loaded
+
 List<Signature> signature = new();
 
 //Load magic text contents into signature object
-FileOperations.LoadJson( signatureListFilePath: signatureFilePath, signatureList: ref signature);
+FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: ref signature);
 
-
-//DisplayHeaders(ref signature);//Display all headers
-//DisplayHeaders_SearchByExtension("docx", in signature);
-//DisplayHeaders_SearchByHex("44", in signature);
-//FileOperations.GetFileType("C:\\Users\\Admin\\Desktop\\text.xlsx",
-//    in signature); //in is cannot be changed
-
-//FileOperations.GetFileType("C:\\Users\\Admin\\Desktop\\text.xlsx", in signature, "C:\\out2.txt"); //in is cannot be changed
-//DisplayHeaders_SearchByExtension("lha", ref signature); //id 16 has na offset of 2
-//PatchBytes("C:\\Users\\Admin\\Desktop\\text.xlsx", "16", ref signature);4d5a
-//byte[] temp = Convert.FromHexString("0x4d 0x5a".Replace("0x","").Replace(" ",""));
-//PatchBytesCustomRange("C:\\Users\\Admin\\Desktop\\test123.xlsx", "7468", "0x4f0");
-//ReadCustomByteRange("C:\\Users\\Admin\\Desktop\\text.xlsx", "2", "3");
-//ReadBytes("C:\\Users\\Admin\\Desktop\\text.xlsx", "384", "19");
-//ReadCustomByteRange_Offset("C:\\Users\\Admin\\Desktop\\text.xlsx", "0x180", "0x193", "C:\\Users\\Admin\\Desktop\\rcro1.txt");
-//DisplayFileHash("C:\\Users\\Admin\\Desktop\\test123.xlsx", "all");
 switch (args[0])
 {
     case "-h":
@@ -108,25 +89,23 @@ switch (args[0])
         break;
     case "-dh":
         //Display headers list
-        if (args.Length == 1)
-        {
-            FileOperations.DisplayHeaders(signatureList: in signature);//Display all headers
-        }
+        if (args.Length == 1) { FileOperations.DisplayHeaders(signatureList: in signature); }
         else if (args.Length == 3)
         {
             if (args[1] == "--search-ext") { FileOperations.DisplayHeadersSearchByExtension(searchKeyWord: args[2], signatureList: in signature); } //Serach by type }
             else if (args[1] == "--search-hex") { FileOperations.DisplayHeadersSearchByHex(searchKeyWord: args[2], signatureList: in signature); } //Serach by hex }
+            else { goto default; }
         }
         else { goto default; }
         break;
     case "-fh":
         if (args.Length==3)
         {
-            if (File.Exists(args[1]))
-            {
-                FileOperations.DisplayFileHash(fileFullPath: args[1], hashType: args[2]);
-            }
-            else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
+            //if (File.Exists(args[1]))
+            //{
+            FileOperations.DisplayFileHash(fileFullPath: args[1], hashType: args[2]);
+            //}
+            //else { Console.WriteLine("Error:  File to analyse was not found!!!"); }
         }
         else { goto default; }
         break;

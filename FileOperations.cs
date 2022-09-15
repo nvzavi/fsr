@@ -15,12 +15,18 @@ namespace fh_res
 {
     static class FileOperations
     {
+        /// <summary>
+        /// Load the signatures.json file into a type List 
+        /// </summary>
+        /// <param name="signatureListFilePath">Full path to the signatures.json file</param>
+        /// <param name="signatureList">List into which the signatures.json file is loaded</param>
         public static void LoadJson(string signatureListFilePath, ref List<Signature> signatureList)
         {
-            List<StagingSignature> stagingSignature = new();
-
-            using (StreamReader r = new(signatureListFilePath))
+            try
             {
+                List<StagingSignature> stagingSignature = new();
+
+                using StreamReader r = new(signatureListFilePath);
                 string json = r.ReadToEnd(); //read the JSON file
                 var jo = JObject.Parse(json); //initialise an object to iterate through the nodes
 
@@ -46,7 +52,7 @@ namespace fh_res
                     foreach (var val in signs.Signs) //access signature list attribute
                     {
                         int offset = Convert.ToInt32(val[..val.IndexOf(',')]); //substring(0,1)
-                        string hexValue = val.Substring(val.IndexOf(',') + 1); //substring(2)
+                        string hexValue = val[(val.IndexOf(',') + 1)..]; //substring(2) old string hexValue = val.Substring(val.IndexOf(',') + 1);
                         signatureList.Add(new Signature()
                         {
                             Id = stagingCounter,
@@ -60,9 +66,19 @@ namespace fh_res
                 }
                 r.Close();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error:" + ex.Message);
+            }     
         }
 
-        private static string HexToAscii(string HexString, int lengthOfHexString = 0) //needs to change , ignorelength must come out bool IgnoreLength
+        /// <summary>
+        /// Returns a ASCII representation of a hexadecimal string
+        /// </summary>
+        /// <param name="HexString">Hexadecimal string that will be represented as ASCII</param>
+        /// <param name="lengthOfHexString">OPTIONAL:  Length of hexdecimal string to read</param>
+        /// <returns>ASCII representation of a specified hexadecimal string</returns>
+        private static string HexToAscii(string HexString, int lengthOfHexString = 0) 
         {
 
             string ascii = string.Empty;
@@ -84,9 +100,17 @@ namespace fh_res
             return ascii;
         }
 
+        /// <summary>
+        /// Returns an evaluated and sorted (ascending) DataTable that is prepared for printing to file or displaying within the console window
+        /// </summary>
+        /// <param name="signatureQuery">List from which the records will be evaluated and sorted</param>
+        /// <param name="hexString">Hexadecimal string that is used for identifying matching records</param>
+        /// <param name="fileFullPath">File within which the containing byte sequence will analysed</param>
+        /// <param name="signatureList">List into which the evaluated and sorted (ascending) recording will be placed</param>
+        /// <returns>Evaluated and sorted resultset</returns>
         private static DataTable FetchResultsSortedAsc(IEnumerable<Signature> signatureQuery, string hexString, string fileFullPath, in List<Signature> signatureList)
         {
-            DataTable processedDataTable = new DataTable();
+            DataTable processedDataTable = new();
             DataColumn dataColumn;
 
             int columnCount = 9;
@@ -125,7 +149,7 @@ namespace fh_res
                     }
                     else
                     {
-                        locatedPos = locatedPos + " ***"; //if count is >= 6 then insert *** to denote multiple occurences of offset in several offsets 
+                        locatedPos += " ***"; //if count is >= 6 then insert *** to denote multiple occurences of offset in several offsets 
                         break;
                     }
                     posCounter++;
@@ -176,45 +200,41 @@ namespace fh_res
 
         private static void SendOutputToFile(string fileFullPath, string fileOutputFullPath, DataTable resultsDataTable)
         {
-            using (FileStream fs = new FileStream(fileOutputFullPath, FileMode.Append, FileAccess.Write))
+            using FileStream fs = new(fileOutputFullPath, FileMode.Append, FileAccess.Write);
+            using StreamWriter sw = new(fs);
+            sw.WriteLine("----------------------------------------------------------------------------------------------");
+            sw.WriteLine("----------                            FILE TYPE                                   ------------");
+            sw.WriteLine("----------------------------------------------------------------------------------------------");
+            sw.WriteLine("Note:  Use your favourite hex editor to view the byte sequence at the detected offset/s");
+            sw.WriteLine("");
+            sw.WriteLine($"File:  {fileFullPath}");
+            sw.WriteLine($"Processed Date:  {DateTime.Now}");
+            sw.WriteLine($"Total Matches Found:  {resultsDataTable.Rows.Count}");
+            sw.WriteLine("");
+            // Add some text to file    
+            foreach (DataRow dRow in resultsDataTable.Rows)
             {
-                using (StreamWriter sw = new StreamWriter(fs)) 
+                sw.WriteLine("{0,-30} {1,-64}", "Probability:", dRow[0].ToString());
+                sw.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
+                sw.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}",
+                    Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
+                sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
+                sw.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
+                sw.WriteLine("{0,-30} {1,-64}", "Mime:", dRow[5].ToString()); //added mime
+
+                if (dRow[0].ToString() == "low")
                 {
-                    sw.WriteLine("----------------------------------------------------------------------------------------------");
-                    sw.WriteLine("----------                            FILE TYPE                                   ------------");
-                    sw.WriteLine("----------------------------------------------------------------------------------------------");
-                    sw.WriteLine("Note:  Use your favourite hex editor to view the byte sequence at the detected offset/s");
-                    sw.WriteLine("");
-                    sw.WriteLine($"File:  {fileFullPath}");
-                    sw.WriteLine($"Processed Date:  {DateTime.Now}");
-                    sw.WriteLine($"Total Matches Found:  {resultsDataTable.Rows.Count}");
-                    sw.WriteLine("");
-                    // Add some text to file    
-                    foreach (DataRow dRow in resultsDataTable.Rows)
-                    {
-                        sw.WriteLine("{0,-30} {1,-64}", "Probability:", dRow[0].ToString());
-                        sw.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
-                        sw.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}",
-                            Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
-                        sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
-                        sw.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
-                        sw.WriteLine("{0,-30} {1,-64}", "Mime:", dRow[5].ToString()); //added mime
+                    sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
+                    sw.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[7].ToString());
 
-                        if (dRow[0].ToString() == "low")
-                        {
-                            sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
-                            sw.WriteLine("{0,-30} {1,-64}", "ASCII at Offset " + dRow[2].ToString() + ":", dRow[7].ToString());
-
-                        }
-
-                        sw.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[8].ToString());
-                        sw.WriteLine("");
-                        sw.WriteLine("");
-                    }
-                    Console.WriteLine("Output written to file: " + fileOutputFullPath);
                 }
+
+                sw.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[8].ToString());
+                sw.WriteLine("");
+                sw.WriteLine("");
             }
-           
+            Console.WriteLine("Output written to file: " + fileOutputFullPath);
+
         }
 
         /// <summary>
@@ -222,6 +242,7 @@ namespace fh_res
         /// </summary>
         public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") //fileOutputFullPath is optional
         {
+            string fullHexString = String.Empty;
             //Validate fileFullPath and fileOutputFullPath arguments
             //start
             if (!File.Exists(path: fileFullPath)) //this arg will must always exist
@@ -236,10 +257,13 @@ namespace fh_res
                     //string fileName = string.Empty;
                     if (File.Exists(fileOutputFullPath))
                     {
-                        Random random = new Random();
+                        Random random = new();
                         // Change fileOutputFullPath to new name
-                        fileOutputFullPath = Path.GetDirectoryName(fileOutputFullPath) + "\\" + Path.GetFileName(fileOutputFullPath).Substring(0, Path.GetFileName(fileOutputFullPath).IndexOf(".")) + "_fhgen_" + random.Next(10000)
-                            + Path.GetFileName(fileOutputFullPath).Substring(Path.GetFileName(fileOutputFullPath).IndexOf("."));
+                        fileOutputFullPath = Path.GetDirectoryName(fileOutputFullPath) + "\\" + Path.GetFileName(fileOutputFullPath)[..Path.GetFileName(fileOutputFullPath).IndexOf(".")] + "_fhgen_" + random.Next(10000)
+                            + Path.GetFileName(fileOutputFullPath)[Path.GetFileName(fileOutputFullPath).IndexOf(".")..];
+
+                        /* fileOutputFullPath = Path.GetDirectoryName(fileOutputFullPath) + "\\" + Path.GetFileName(fileOutputFullPath).Substring(0, Path.GetFileName(fileOutputFullPath).IndexOf(".")) + "_fhgen_" + random.Next(10000)
+                            + Path.GetFileName(fileOutputFullPath).Substring(Path.GetFileName(fileOutputFullPath).IndexOf(".")); */
 
                         StreamWriter writer = new(fileOutputFullPath);
                         writer.Close();
@@ -262,30 +286,29 @@ namespace fh_res
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error info:" + ex.Message);
+                    Console.WriteLine("Error:" + ex.Message);
                     Environment.Exit(0);
                 }
             }
             //end
 
-            byte[] bytesFile;
-            using (FileStream fs = File.OpenRead(fileFullPath))//@argFilePath
-            {
-                int byteSize = (int)fs.Length; //possible loss of data here FIX IT
-                bytesFile = new byte[byteSize];
-                fs.Read(bytesFile, 0, byteSize); //read header into bytesfile
-                fs.Close();
-            }
-
-            string fullHexString = BitConverter.ToString(bytesFile).Replace("-", "");  //Convert the byte file to its hex string representation and remove the - symbols
-            Console.WriteLine("\n----------------------------------------------------------------------------------------------");
-            Console.WriteLine("----------                            FILE TYPE                                   ------------");
-            Console.WriteLine("----------------------------------------------------------------------------------------------");
-            Console.WriteLine("Note:  Use your favourite hex editor to view the byte sequence at the detected offset/s");
-
             try //
             {
-                
+                byte[] bytesFile;
+                using (FileStream fs = File.OpenRead(fileFullPath))//@argFilePath
+                {
+                    int byteSize = (int)fs.Length; //possible loss of data here FIX IT
+                    bytesFile = new byte[byteSize];
+                    fs.Read(bytesFile, 0, byteSize); //read header into bytesfile
+                    fs.Close();
+                }
+
+                fullHexString = BitConverter.ToString(bytesFile).Replace("-", "");  //Convert the byte file to its hex string representation and remove the - symbols
+                Console.WriteLine("\n----------------------------------------------------------------------------------------------");
+                Console.WriteLine("----------                            FILE TYPE                                   ------------");
+                Console.WriteLine("----------------------------------------------------------------------------------------------");
+                Console.WriteLine("Note:  Use your favourite hex editor to view the byte sequence at the detected offset/s");
+
                 var queryResult = signatureList.Where(x => fullHexString.Contains(x.Hex)); //get all rows where JSON signature matches with a byte sequence in the file
 
                 //add code here to find the original offset if not found at the expected offset
@@ -316,12 +339,12 @@ namespace fh_res
             {
                 Console.WriteLine("Cannot find exact matching byte sequence!!!");
                 Console.WriteLine("Current Information: (Displaying 16 bytes from offset 0)"); //catered for 4 spaces conatined in the header variable
-                Console.WriteLine("{0,-15} {1,-64}", "Hexadecimal:", fullHexString[..20]); //this is wrong
-                Console.WriteLine("{0,-15} {1,-64}", "ASCII:", FileOperations.HexToAscii(HexString: fullHexString, lengthOfHexString: 20)); //this is wrong
+                Console.WriteLine("{0,-15} {1,-64}", "Hexadecimal:", fullHexString[..20]); 
+                Console.WriteLine("{0,-15} {1,-64}", "ASCII:", FileOperations.HexToAscii(HexString: fullHexString, lengthOfHexString: 20)); 
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error info:" + ex.Message);
+                Console.WriteLine("Error:" + ex.Message);
             }
             finally
             {
@@ -373,16 +396,16 @@ namespace fh_res
         {
             //Validate fileFullPath and searchId arguments
             //start
-            if (!File.Exists(path: fileFullPath)) //this arg will must always exist
-            {
-                Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
-                Environment.Exit(0);
-            }
-            if (searchId <= 0) //this arg will must always exist
-            {
-                Console.WriteLine($"Error:  ID '{searchId}' is not a valid ID!!!\nID must be greater than 0");
-                Environment.Exit(0);
-            }
+            //if (!File.Exists(path: fileFullPath)) //this arg will must always exist
+            //{
+            //    Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
+            //    Environment.Exit(0);
+            //}
+            //if (searchId <= 0) //this arg will must always exist
+            //{
+            //    Console.WriteLine($"Error:  ID '{searchId}' is not a valid ID!!!\nID must be greater than 0");
+            //    Environment.Exit(0);
+            //}
             //end
 
             try
@@ -418,14 +441,14 @@ namespace fh_res
 
         public static void PatchBytesCustomRange(string fileFullPath, string hexSequence, string startingHexOffSet) 
         {
-            //Validate fileFullPath argument
-            //start
-            if (!File.Exists(path: fileFullPath)) //this arg will must always exist
-            {
-                Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
-                Environment.Exit(0);
-            }
-            //end
+            ////Validate fileFullPath argument
+            ////start
+            //if (!File.Exists(path: fileFullPath)) //this arg will must always exist
+            //{
+            //    Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
+            //    Environment.Exit(0);
+            //}
+            ////end
 
             try
             {
@@ -474,17 +497,15 @@ namespace fh_res
                 int customSize = Convert.ToInt32(endingHexOffSet, 16) - Convert.ToInt32(startingHexOffSet, 16);
                 byte[] buffer = new byte[customSize];
 
-                using (FileStream fs = File.OpenRead(fileFullPath))//@argFilePath
+                using FileStream fs = File.OpenRead(fileFullPath);//@argFilePath
+                fs.Position = Convert.ToInt32(startingHexOffSet, 16); //offset to read from
+                fs.Read(buffer, 0, customSize);
+                using FileStream fs1 = File.OpenWrite(fileOutputFullPath);
                 {
-                    fs.Position = Convert.ToInt32(startingHexOffSet, 16); //offset to read from
-                    fs.Read(buffer, 0, customSize);
-                    using FileStream fs1 = File.OpenWrite(fileOutputFullPath);
-                    {
-                        fs1.Write(buffer, 0, buffer.Length);
-                        fs1.Close();
-                    }
-                    fs.Close();
+                    fs1.Write(buffer, 0, buffer.Length);
+                    fs1.Close();
                 }
+                fs.Close();
             }
             catch (Exception ex)
             {
@@ -497,96 +518,133 @@ namespace fh_res
         /// </summary>
         public static void DisplayHeaders(in List<Signature> signatureList)
         {
-            Console.WriteLine("\n----------------------------------------------------------------------------------------------");
-            Console.WriteLine("----------                            FILE HEADERS                                ------------");
-            Console.WriteLine("----------------------------------------------------------------------------------------------");
-            Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
-            Console.WriteLine($"\nTotal Records:  {signatureList.Count}");
-            foreach (Signature signatureRow in signatureList)
+            try
             {
-                Console.WriteLine("\n{0,-15} {1,-120}", "ID:", signatureRow.Id);
-                Console.WriteLine("{0,-15} {1,-120}", "Extension:", signatureRow.Name);
-                Console.WriteLine("{0,-15} {1,-120}", "Offset:", signatureRow.Offset);
-                Console.WriteLine("{0,-15} {1,-120}", "Hex:", signatureRow.Hex);
-                Console.WriteLine("{0,-15} {1,-120}", "ASCII:", FileOperations.HexToAscii(HexString: signatureRow.Hex));
-                Console.WriteLine("{0,-15} {1,-120}", "MIME:", signatureRow.Mime);
-                Console.WriteLine("\n---------------------------------------------");
+                Console.WriteLine("\n----------------------------------------------------------------------------------------------");
+                Console.WriteLine("----------                            FILE HEADERS                                ------------");
+                Console.WriteLine("----------------------------------------------------------------------------------------------");
+                Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
+                Console.WriteLine($"\nTotal Records:  {signatureList.Count}");
+                foreach (Signature signatureRow in signatureList)
+                {
+                    Console.WriteLine("\n{0,-15} {1,-120}", "ID:", signatureRow.Id);
+                    Console.WriteLine("{0,-15} {1,-120}", "Extension:", signatureRow.Name);
+                    Console.WriteLine("{0,-15} {1,-120}", "Offset:", signatureRow.Offset);
+                    Console.WriteLine("{0,-15} {1,-120}", "Hex:", signatureRow.Hex);
+                    Console.WriteLine("{0,-15} {1,-120}", "ASCII:", FileOperations.HexToAscii(HexString: signatureRow.Hex));
+                    Console.WriteLine("{0,-15} {1,-120}", "MIME:", signatureRow.Mime);
+                    Console.WriteLine("\n---------------------------------------------");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nError:  " + ex.Message);
             }
         }
 
         public static void DisplayHeadersSearchByExtension(string searchKeyWord, in List<Signature> signatureList)
         {
-            int signature1 = signatureList.FindAll(x => x.Name.ToLower().Contains(searchKeyWord.ToLower())).Count;
-            Console.WriteLine("\n----------------------------------------------------------------------------------------------");
-            Console.WriteLine("----------                            FILE HEADERS                                ------------");
-            Console.WriteLine("----------------------------------------------------------------------------------------------");
-            Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
-            Console.WriteLine($"\nTotal Records:  {signature1}");
-            foreach (Signature tempSignature in signatureList.FindAll(x => (x.Name.ToLower().Contains(searchKeyWord.ToLower())))) //Convert all input to lowercase for searching
+            try
             {
-                Console.WriteLine("\n{0,-15} {1,-120}", "ID:", tempSignature.Id);
-                Console.WriteLine("{0,-15} {1,-120}", "Extension:", tempSignature.Name);
-                Console.WriteLine("{0,-15} {1,-120}", "Offset:", tempSignature.Offset);
-                Console.WriteLine("{0,-15} {1,-120}", "Hex:", tempSignature.Hex);
-                Console.WriteLine("{0,-15} {1,-120}", "ASCII:", FileOperations.HexToAscii(HexString: tempSignature.Hex));
-                Console.WriteLine("{0,-15} {1,-120}", "MIME:", tempSignature.Mime);
-                Console.WriteLine("\n---------------------------------------------");
+                int signature1 = signatureList.FindAll(x => x.Name.ToLower().Contains(searchKeyWord.ToLower())).Count;
+                if (signature1 > 0)
+                {
+                    Console.WriteLine("\n----------------------------------------------------------------------------------------------");
+                    Console.WriteLine("----------                            FILE HEADERS                                ------------");
+                    Console.WriteLine("----------------------------------------------------------------------------------------------");
+                    Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
+                    Console.WriteLine($"\nTotal Records:  {signature1}");
+                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Name.ToLower().Contains(searchKeyWord.ToLower())))) //Convert all input to lowercase for searching
+                    {
+                        Console.WriteLine("\n{0,-15} {1,-120}", "ID:", tempSignature.Id);
+                        Console.WriteLine("{0,-15} {1,-120}", "Extension:", tempSignature.Name);
+                        Console.WriteLine("{0,-15} {1,-120}", "Offset:", tempSignature.Offset);
+                        Console.WriteLine("{0,-15} {1,-120}", "Hex:", tempSignature.Hex);
+                        Console.WriteLine("{0,-15} {1,-120}", "ASCII:", FileOperations.HexToAscii(HexString: tempSignature.Hex));
+                        Console.WriteLine("{0,-15} {1,-120}", "MIME:", tempSignature.Mime);
+                        Console.WriteLine("\n---------------------------------------------");
+                    }
+                }
+                else { Console.WriteLine($"\nNo matching records were found for extension:  {searchKeyWord}"); }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nError:  " + ex.Message);
             }
         }
 
         public static void DisplayHeadersSearchByHex(string searchKeyWord, in List<Signature> signatureList)
         {
-            int signature1 = signatureList.FindAll(x => x.Hex.ToLower().Contains(searchKeyWord.ToLower())).Count;
-            Console.WriteLine("\n----------------------------------------------------------------------------------------------");
-            Console.WriteLine("----------                            FILE HEADERS                                ------------");
-            Console.WriteLine("----------------------------------------------------------------------------------------------");
-            Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
-            Console.WriteLine($"\nTotal Records:  {signature1}");
-            foreach (Signature tempSignature in signatureList.FindAll(x => (x.Hex.ToLower().Contains(searchKeyWord.ToLower())))) //Convert all input to lowercase for searching
+            try
             {
-                Console.WriteLine("\n{0,-15} {1,-120}", "ID:", tempSignature.Id);
-                Console.WriteLine("{0,-15} {1,-120}", "Extension:", tempSignature.Name);
-                Console.WriteLine("{0,-15} {1,-120}", "Offset:", tempSignature.Offset);
-                Console.WriteLine("{0,-15} {1,-120}", "Hex:", tempSignature.Hex);
-                Console.WriteLine("{0,-15} {1,-120}", "ASCII:", FileOperations.HexToAscii(HexString: tempSignature.Hex));
-                Console.WriteLine("{0,-15} {1,-120}", "MIME:", tempSignature.Mime);
-                Console.WriteLine("\n---------------------------------------------");
+                int signature1 = signatureList.FindAll(x => x.Hex.ToLower().Contains(searchKeyWord.ToLower())).Count;
+                if (signature1 > 0)
+                {
+                    Console.WriteLine("\n----------------------------------------------------------------------------------------------");
+                    Console.WriteLine("----------                            FILE HEADERS                                ------------");
+                    Console.WriteLine("----------------------------------------------------------------------------------------------");
+                    Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
+                    Console.WriteLine($"\nTotal Records:  {signature1}");
+                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Hex.ToLower().Contains(searchKeyWord.ToLower())))) //Convert all input to lowercase for searching
+                    {
+                        Console.WriteLine("\n{0,-15} {1,-120}", "ID:", tempSignature.Id);
+                        Console.WriteLine("{0,-15} {1,-120}", "Extension:", tempSignature.Name);
+                        Console.WriteLine("{0,-15} {1,-120}", "Offset:", tempSignature.Offset);
+                        Console.WriteLine("{0,-15} {1,-120}", "Hex:", tempSignature.Hex);
+                        Console.WriteLine("{0,-15} {1,-120}", "ASCII:", FileOperations.HexToAscii(HexString: tempSignature.Hex));
+                        Console.WriteLine("{0,-15} {1,-120}", "MIME:", tempSignature.Mime);
+                        Console.WriteLine("\n---------------------------------------------");
+                    }
+                    Console.WriteLine("----------------------------------------------------------------------------------------------");
+                }
+                else { Console.WriteLine($"\nNo matching records were found for hex string:  {searchKeyWord}"); }             
             }
-            Console.WriteLine("----------------------------------------------------------------------------------------------");
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nError:  " + ex.Message);
+            }
         }
 
         public static void DisplayFileHash(string fileFullPath, string hashType)
         {
-            LocalFile localFile = new LocalFile(fileFullPath);
-            Console.WriteLine($"\n{hashType} file hash/s -----------------------------------------------------------------------------");
-            switch (hashType.ToUpper())
+            try
             {
-                case nameof(HashType.MD5):
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.MD5), localFile.GetMD5Hash());
-                    break;
-                case nameof(HashType.SHA1):
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA1), localFile.GetSHA1Hash());
-                    break;
-                case nameof(HashType.SHA256):
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA256), localFile.GetSHA256Hash());
-                    break;
-                case nameof(HashType.SHA384):
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA384), localFile.GetSHA384Hash());
-                    break;
-                case nameof(HashType.SHA512):
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA512), localFile.GetSHA512Hash());
-                    break;
-                case nameof(HashType.ALL):
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.MD5), localFile.GetMD5Hash());
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA1), localFile.GetSHA1Hash());
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA256), localFile.GetSHA256Hash());
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA384), localFile.GetSHA384Hash());
-                    Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA512), localFile.GetSHA512Hash());
-                    break;
-                default:
-                    break;
+                LocalFile localFile = new(fileFullPath);
+                Console.WriteLine($"\n{hashType} file hash/s -----------------------------------------------------------------------------");
+                switch (hashType.ToUpper())
+                {
+                    case nameof(HashType.MD5):
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.MD5), localFile.GetMD5Hash());
+                        break;
+                    case nameof(HashType.SHA1):
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA1), localFile.GetSHA1Hash());
+                        break;
+                    case nameof(HashType.SHA256):
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA256), localFile.GetSHA256Hash());
+                        break;
+                    case nameof(HashType.SHA384):
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA384), localFile.GetSHA384Hash());
+                        break;
+                    case nameof(HashType.SHA512):
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA512), localFile.GetSHA512Hash());
+                        break;
+                    case nameof(HashType.ALL):
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.MD5), localFile.GetMD5Hash());
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA1), localFile.GetSHA1Hash());
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA256), localFile.GetSHA256Hash());
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA384), localFile.GetSHA384Hash());
+                        Console.WriteLine("{0,-15} {1,-64}", nameof(HashType.SHA512), localFile.GetSHA512Hash());
+                        break;
+                    default:
+                        break;
+                }
+                Console.WriteLine("----------------------------------------------------------------------------------------------");
             }
-            Console.WriteLine("----------------------------------------------------------------------------------------------");
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nError:  " + ex.Message);
+            }
+
         }
     }
 }
