@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace fh_res
 {
+    /// <summary>
+    /// Represents the final file signature object into which the object data is loaded from the signature staging area (StagingSignature.cs)
+    /// </summary>
     class Signature
     {
         public int Id { get; set; }

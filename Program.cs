@@ -18,14 +18,8 @@ using Newtonsoft.Json.Linq;
 
 //JSON retrieved from https://github.com/qti3e renamed file to signatures.json
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\signatures.json";
-
 List<Signature> signature = new();
-
-//Load magic text contents into signature object
 FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: ref signature);
-
-
-FileOperations.GetFileType("C:\\Users\\Admin\\Documents\\repos\\fh_res\\fh_res\\bin\\Debug\\net6.0\\ShellProgressBar.dll", signature, "C:\\Users\\Admin\\Desktop\\notejhgs.txt");
 
 switch (args[0])
 {
@@ -61,43 +55,43 @@ switch (args[0])
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "file hashes as specified above");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
         break;
-    case "-ft": //add validation to check if file is a path actual file e.g must not --s
+    case "-ft"://file type
         if (args.Length==2) { FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature); }
         else if (args.Length== 3) { FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature, fileOutputFullPath: args[2]); }
         else { goto default; }
         break;
-    case "-pb":
+    case "-pb"://patch  byte/s
         if (args.Length == 3)
         {
             FileOperations.PatchBytes(fileFullPath: args[1], searchId: Convert.ToInt32(args[2]), signatureList: in signature);
         }
         else { goto default; }
         break;
-    case "-pc": 
+    case "-pc"://patch custom byte/s
         if (args.Length==4)
         {
             FileOperations.PatchBytesCustomRange(fileFullPath: args[1], hexSequence: args[2], startingHexOffSet: args[3]);
         }
         else { goto default; }     
         break;
-    case "-cb": 
+    case "-cb"://carve byte/s  
         if (args.Length == 5)
         {
             FileOperations.ByteCarverByOffsets(fileFullPath: args[1], startingHexOffSet: args[2], endingHexOffSet: args[3], fileOutputFullPath: args[4]); 
         }
         else { goto default; }
         break;
-    case "-dh":
+    case "-dh"://display header
         if (args.Length == 1) { FileOperations.DisplayHeaders(signatureList: in signature); }
         else if (args.Length == 3)
         {
-            if (args[1] == "--search-ext") { FileOperations.DisplayHeadersSearchByExtension(searchExtKeyWord: args[2], signatureList: in signature); } //Serach by type }
-            else if (args[1] == "--search-hex") { FileOperations.DisplayHeadersSearchByHex(searchHexKeyWord: args[2], signatureList: in signature); } //Serach by hex }
+            if (args[1] == "--search-ext") { FileOperations.DisplayHeadersSearchByExtension(searchExtKeyWord: args[2], signatureList: in signature); } 
+            else if (args[1] == "--search-hex") { FileOperations.DisplayHeadersSearchByHex(searchHexKeyWord: args[2], signatureList: in signature); } 
             else { goto default; }
         }
         else { goto default; }
         break;
-    case "-fh":
+    case "-fh"://file hash
         if (args.Length==3)
         {
             FileOperations.DisplayFileHash(fileFullPath: args[1], hashType: args[2]);
@@ -105,6 +99,6 @@ switch (args[0])
         else { goto default; }
         break;
     default:
-        Console.WriteLine("Error:  Please enter the required commands/arguments!!! \nUse command fh_res -h to view the help window");
+        Console.WriteLine("Error: Please enter the required commands/arguments!!! \nUse command fh_res -h to view the help window");
         break;
 }

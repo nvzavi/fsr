@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace fh_res
 {
+    /// <summary>
+    /// List of hashing algorithms
+    /// </summary>
     public enum HashType
     {
         MD5,

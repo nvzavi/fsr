@@ -258,32 +258,28 @@ namespace fh_res
         /// <param name="fileOutputFullPath">OPTIONAL:  Full path of the file to which the results will be written.  Default to '-1' if no value is passed in the method call statement</param>
         public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") //fileOutputFullPath is optional
         {
-            //TODO: Encasulate this entire void in a try catch statement
             string fullHexString = String.Empty;
             //Validate fileFullPath and fileOutputFullPath arguments
-            //start
-            if (!File.Exists(path: fileFullPath)) //this arg will must always exist
+            try 
             {
-                throw new Exception($"File '{fileFullPath}' not found!!!");
-            }
-            if (fileOutputFullPath!="-1")
-            {
-                try
+                if (!File.Exists(path: fileFullPath)) //this arg will must always exist
                 {
+                    throw new Exception($"File '{fileFullPath}' not found!!!");
+                }
+                if (fileOutputFullPath!="-1")
+                {
+             
                     if (!Directory.Exists(Path.GetDirectoryName(fileOutputFullPath)))
                     {
                         throw new Exception($"Output directory '{fileOutputFullPath}' is not valid!!!");
                     }
-                    //string fileName = string.Empty;
+
                     if (File.Exists(fileOutputFullPath))
                     {
                         Random random = new();
                         // Change fileOutputFullPath to new name
                         fileOutputFullPath = Path.GetDirectoryName(fileOutputFullPath) + "\\" + Path.GetFileName(fileOutputFullPath)[..Path.GetFileName(fileOutputFullPath).IndexOf(".")] + "_fhgen_" + random.Next(10000)
                             + Path.GetFileName(fileOutputFullPath)[Path.GetFileName(fileOutputFullPath).IndexOf(".")..];
-
-                        /* fileOutputFullPath = Path.GetDirectoryName(fileOutputFullPath) + "\\" + Path.GetFileName(fileOutputFullPath).Substring(0, Path.GetFileName(fileOutputFullPath).IndexOf(".")) + "_fhgen_" + random.Next(10000)
-                            + Path.GetFileName(fileOutputFullPath).Substring(Path.GetFileName(fileOutputFullPath).IndexOf(".")); */
 
                         StreamWriter writer = new(fileOutputFullPath);
                         writer.Close();
@@ -293,32 +289,15 @@ namespace fh_res
                         StreamWriter writer = new(fileOutputFullPath);
                         writer.Close();
                     }
+                
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    Console.WriteLine($"Error:  Access to output path '{fileOutputFullPath}' was denied!!!");
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    Console.WriteLine($"Error:  Output path '{fileOutputFullPath}' was not found!!!");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error:" + ex.Message);  
-                }
-                finally
-                {
-                    Environment.Exit(0);
-                }
-            }
-            //end
 
-            try //
-            {
                 byte[] bytesFile;
+                int byteSize = 0;
+
                 using (FileStream fs = File.OpenRead(fileFullPath))//@argFilePath
                 {
-                    int byteSize = (int)fs.Length; //possible loss of data here FIX IT
+                    byteSize = (int)fs.Length; //possible loss of data here FIX IT
                     bytesFile = new byte[byteSize];
                     fs.Read(bytesFile, 0, byteSize); //read header into bytesfile
                     fs.Close();
@@ -332,46 +311,34 @@ namespace fh_res
 
                 var queryResult = signatureList.Where(x => fullHexString.Contains(x.Hex)); //get all rows where JSON signature matches with a byte sequence in the file
 
-                //add code here to find the original offset if not found at the expected offset
-
                 Console.WriteLine($"\nFile:  {fileFullPath}");
                 GetMoreFileDetails(fileFullPath: fileFullPath);
 
                 int totalRecords = queryResult.Count();
-                Console.WriteLine($"Total Matches Found:  {totalRecords}");
-                //TODO: Add if totalRecords=0 then show this info as shown in the InvalidOperationException below
-                //string[,] stagingOuput = new string[query.Count(), columnCount];
-
-                //Process query results and sort the results from high to low probability
-                DataTable sortedResultsDataTable;
-                sortedResultsDataTable = FetchResultsSortedAsc(signatureQuery: queryResult, hexString: fullHexString, fileFullPath: fileFullPath,signatureList: in signatureList).Copy();
-              
-                //try catch here
-                //write output to file
-                if (fileOutputFullPath == "-1") //output to screen
+                Console.WriteLine($"\nTotal Matches Found:  {totalRecords}");
+                if (totalRecords > 0)
                 {
-                    SendOutputToScreen(resultsDataTable: sortedResultsDataTable);
+                    //Process query results and sort the results from high to low probability
+                    DataTable sortedResultsDataTable;
+                    sortedResultsDataTable = FetchResultsSortedAsc(signatureQuery: queryResult, hexString: fullHexString, fileFullPath: fileFullPath, signatureList: in signatureList).Copy();
+                    //write output to file
+                    if (fileOutputFullPath == "-1") //output to screen
+                    {
+                        SendOutputToScreen(resultsDataTable: sortedResultsDataTable);
+                    }
+                    else //output to file
+                    {
+                        SendOutputToFile(fileFullPath: fileFullPath, fileOutputFullPath: fileOutputFullPath, resultsDataTable: sortedResultsDataTable);
+                    }
                 }
-                else //output to file
-                {
-                    SendOutputToFile(fileFullPath: fileFullPath, fileOutputFullPath: fileOutputFullPath, resultsDataTable: sortedResultsDataTable);
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                //TODO:  Remove the below statements. Look at above TODO 
-                Console.WriteLine("Cannot find exact matching byte sequence!!!");
-                Console.WriteLine("Current Information: (Displaying 16 bytes from offset 0)"); //catered for 4 spaces conatined in the header variable
-                Console.WriteLine("{0,-15} {1,-64}", "Hexadecimal:", fullHexString[..20]); 
-                Console.WriteLine("{0,-15} {1,-64}", "ASCII:", FileOperations.HexToAscii(HexString: fullHexString, lengthOfHexString: 20)); 
+                else 
+                { 
+                    Console.WriteLine("\nNo matching file types were found!!!");
+                }             
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error:" + ex.Message);
-            }
-            finally
-            {
-                Console.WriteLine("----------------------------------------------------------------------------------------------");
             }
         }
 
