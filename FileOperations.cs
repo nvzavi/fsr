@@ -129,7 +129,7 @@ namespace fh_res
                 int posCounter = 0;
                 int posValue = 0;
 
-                foreach (var offsetLoc in Offetlocations(searchTerm: sig.Hex, searchStr: hexString))
+                foreach (var offsetLoc in Offetlocations(searchHex: sig.Hex, fullHex: hexString))
                 {
                     if (Convert.ToInt32(offsetLoc) % 2 != 0) //if its not an even number then skip execution and proceed to next iteration :  hex found at even number only
                     {
@@ -176,7 +176,7 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Output the results of the GetFileType method to the console window
+        /// Returns the result of the GetFileType method to the console window
         /// </summary>
         /// <param name="resultsDataTable">DataTable from which the results will be extracted</param>
         private static void SendOutputToScreen(DataTable resultsDataTable)
@@ -258,18 +258,22 @@ namespace fh_res
         /// <param name="fileOutputFullPath">OPTIONAL:  Full path of the file to which the results will be written.  Default to '-1' if no value is passed in the method call statement</param>
         public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") //fileOutputFullPath is optional
         {
+            //TODO: Encasulate this entire void in a try catch statement
             string fullHexString = String.Empty;
             //Validate fileFullPath and fileOutputFullPath arguments
             //start
             if (!File.Exists(path: fileFullPath)) //this arg will must always exist
             {
-                Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
-                Environment.Exit(0);
+                throw new Exception($"File '{fileFullPath}' not found!!!");
             }
             if (fileOutputFullPath!="-1")
             {
                 try
                 {
+                    if (!Directory.Exists(Path.GetDirectoryName(fileOutputFullPath)))
+                    {
+                        throw new Exception($"Output directory '{fileOutputFullPath}' is not valid!!!");
+                    }
                     //string fileName = string.Empty;
                     if (File.Exists(fileOutputFullPath))
                     {
@@ -293,16 +297,17 @@ namespace fh_res
                 catch (UnauthorizedAccessException)
                 {
                     Console.WriteLine($"Error:  Access to output path '{fileOutputFullPath}' was denied!!!");
-                    Environment.Exit(0);
                 }
                 catch (DirectoryNotFoundException)
                 {
                     Console.WriteLine($"Error:  Output path '{fileOutputFullPath}' was not found!!!");
-                    Environment.Exit(0);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error:" + ex.Message);
+                    Console.WriteLine("Error:" + ex.Message);  
+                }
+                finally
+                {
                     Environment.Exit(0);
                 }
             }
@@ -334,6 +339,7 @@ namespace fh_res
 
                 int totalRecords = queryResult.Count();
                 Console.WriteLine($"Total Matches Found:  {totalRecords}");
+                //TODO: Add if totalRecords=0 then show this info as shown in the InvalidOperationException below
                 //string[,] stagingOuput = new string[query.Count(), columnCount];
 
                 //Process query results and sort the results from high to low probability
@@ -353,6 +359,7 @@ namespace fh_res
             }
             catch (InvalidOperationException)
             {
+                //TODO:  Remove the below statements. Look at above TODO 
                 Console.WriteLine("Cannot find exact matching byte sequence!!!");
                 Console.WriteLine("Current Information: (Displaying 16 bytes from offset 0)"); //catered for 4 spaces conatined in the header variable
                 Console.WriteLine("{0,-15} {1,-64}", "Hexadecimal:", fullHexString[..20]); 
@@ -368,6 +375,10 @@ namespace fh_res
             }
         }
 
+        /// <summary>
+        /// Return additional file attributes for a specified file
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file from which the additional attribute data is displayed</param>
         private static void GetMoreFileDetails(string fileFullPath)
         {
             LocalFile localFile = new(fileFullPath);
@@ -380,23 +391,36 @@ namespace fh_res
             Console.WriteLine("----------------------------------------------------------------------------------------------");
         }
 
-        private static IEnumerable Offetlocations(string searchTerm, string searchStr)
+        /// <summary>
+        /// Returns all starting indices/indexes (zero based) of a specified hexadecimal value that was located within a larger hexadecimal string
+        /// </summary>
+        /// <param name="searchHex">Hexadecimal value to be searched for</param>
+        /// <param name="fullHex">Full hexadecimal string to be searched</param>
+        /// <returns>Starting indices (zero based) of a specified hexadecimal value</returns>
+        private static IEnumerable Offetlocations(string searchHex, string fullHex)
         {
             int searchPos = 0;
-            int retVal = searchStr.IndexOf(searchTerm, searchPos);
+            int retVal = fullHex.IndexOf(searchHex, searchPos);
             while (retVal != -1)
             {
                 yield return retVal;
-                searchPos = retVal + searchTerm.Length;
-                retVal = searchStr.IndexOf(searchTerm, searchPos);
+                searchPos = retVal + searchHex.Length;
+                retVal = fullHex.IndexOf(searchHex, searchPos);
             }
         }
 
+        /// <summary>
+        /// Returns a hexadecimal sequence that starts at a specified offset and ends at a specified byte length
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file from which the hexadecimal values are read</param>
+        /// <param name="startingHexOffSet">Hexadecimal offset from which to start reading</param>
+        /// <param name="lengthToRead">Byte length to read</param>
+        /// <returns>Hexadecimal value at the specified offset and length</returns>
         private static string ReadCustomByteRange(string fileFullPath, int startingHexOffSet, int lengthToRead) 
         {
             byte[] bytesFile = new byte[lengthToRead];
 
-            using (FileStream fs = File.OpenRead(fileFullPath))//@argFilePath
+            using (FileStream fs = File.OpenRead(fileFullPath))
             {
                 fs.Position = startingHexOffSet; //offset to read from
                 fs.Read(bytesFile, 0, lengthToRead);
@@ -406,24 +430,13 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Patch header from offset 0
-        /// </summary> 
+        /// Patch a specified file with a selected hexadecimal sequence from the signatures.json file
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file in which the hexadecimal values will be patched</param>
+        /// <param name="searchId">ID associated with a specific file type's attributes, offset and hexadecimal sequence that is located within the signatures.json file</param>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
         public static void PatchBytes(string fileFullPath, int searchId, in List<Signature> signatureList) 
         {
-            //Validate fileFullPath and searchId arguments
-            //start
-            //if (!File.Exists(path: fileFullPath)) //this arg will must always exist
-            //{
-            //    Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
-            //    Environment.Exit(0);
-            //}
-            //if (searchId <= 0) //this arg will must always exist
-            //{
-            //    Console.WriteLine($"Error:  ID '{searchId}' is not a valid ID!!!\nID must be greater than 0");
-            //    Environment.Exit(0);
-            //}
-            //end
-
             try
             {
                 string revertByte = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: signatureList[searchId - 1].Offset,
@@ -455,17 +468,14 @@ namespace fh_res
             }
         }
 
+        /// <summary>
+        /// Patch a specified file with a custom hexadecimal sequence at a specified starting offset
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file in which the hexadecimal values will be patched</param>
+        /// <param name="hexSequence">Custom hexadecimal sequence to patch</param>
+        /// <param name="startingHexOffSet">Hexadecimal offset from which to start patching</param>
         public static void PatchBytesCustomRange(string fileFullPath, string hexSequence, string startingHexOffSet) 
         {
-            ////Validate fileFullPath argument
-            ////start
-            //if (!File.Exists(path: fileFullPath)) //this arg will must always exist
-            //{
-            //    Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
-            //    Environment.Exit(0);
-            //}
-            ////end
-
             try
             {
                 //revertByte is called again and again for different function...look at calling it once
@@ -497,17 +507,15 @@ namespace fh_res
             }
         }
 
+        /// <summary>
+        /// Carve bytes from a specified file wihtin a specific hexadecimal offset range and write output to a new file
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file from which the hexadecimal byte values will be carved</param>
+        /// <param name="startingHexOffSet">Hexadecimal offset that represents the start of the byte carving offset range</param>
+        /// <param name="endingHexOffSet">Hexadecimal offset that represents the end of the byte carving offset range</param>
+        /// <param name="fileOutputFullPath">Full path of the file to which the results will be written</param>
         public static void ByteCarverByOffsets(string fileFullPath, string startingHexOffSet, string endingHexOffSet, string fileOutputFullPath) 
         {
-            //Validate fileFullPath argument
-            //start
-            if (!File.Exists(path: fileFullPath)) //this arg will must always exist
-            {
-                Console.WriteLine($"Error:  File '{fileFullPath}' not found!!!");
-                Environment.Exit(0);
-            }
-            //end
-
             try
             {
                 int customSize = Convert.ToInt32(endingHexOffSet, 16) - Convert.ToInt32(startingHexOffSet, 16);
@@ -530,8 +538,9 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Display headers list
+        /// Returns a complete list of known file signatures from the signatures.json file
         /// </summary>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
         public static void DisplayHeaders(in List<Signature> signatureList)
         {
             try
@@ -539,7 +548,6 @@ namespace fh_res
                 Console.WriteLine("\n----------------------------------------------------------------------------------------------");
                 Console.WriteLine("----------                            FILE HEADERS                                ------------");
                 Console.WriteLine("----------------------------------------------------------------------------------------------");
-                Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
                 Console.WriteLine($"\nTotal Records:  {signatureList.Count}");
                 foreach (Signature signatureRow in signatureList)
                 {
@@ -558,11 +566,16 @@ namespace fh_res
             }
         }
 
-        public static void DisplayHeadersSearchByExtension(string searchKeyWord, in List<Signature> signatureList)
+        /// <summary>
+        /// Returns a list of known file signatures, from the signatures.json file, that are associated with a specified file extension 
+        /// </summary>
+        /// <param name="searchExtKeyWord">File extension to be searched</param>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        public static void DisplayHeadersSearchByExtension(string searchExtKeyWord, in List<Signature> signatureList)
         {
             try
             {
-                int signature1 = signatureList.FindAll(x => x.Name.ToLower().Contains(searchKeyWord.ToLower())).Count;
+                int signature1 = signatureList.FindAll(x => x.Name.ToLower().Contains(searchExtKeyWord.ToLower())).Count;
                 if (signature1 > 0)
                 {
                     Console.WriteLine("\n----------------------------------------------------------------------------------------------");
@@ -570,7 +583,7 @@ namespace fh_res
                     Console.WriteLine("----------------------------------------------------------------------------------------------");
                     Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
                     Console.WriteLine($"\nTotal Records:  {signature1}");
-                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Name.ToLower().Contains(searchKeyWord.ToLower())))) //Convert all input to lowercase for searching
+                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Name.ToLower().Contains(searchExtKeyWord.ToLower())))) //Convert all input to lowercase for searching
                     {
                         Console.WriteLine("\n{0,-15} {1,-120}", "ID:", tempSignature.Id);
                         Console.WriteLine("{0,-15} {1,-120}", "Extension:", tempSignature.Name);
@@ -581,7 +594,7 @@ namespace fh_res
                         Console.WriteLine("\n---------------------------------------------");
                     }
                 }
-                else { Console.WriteLine($"\nNo matching records were found for extension:  {searchKeyWord}"); }
+                else { Console.WriteLine($"\nNo matching records were found for extension:  {searchExtKeyWord}"); }
             }
             catch (Exception ex)
             {
@@ -589,11 +602,16 @@ namespace fh_res
             }
         }
 
-        public static void DisplayHeadersSearchByHex(string searchKeyWord, in List<Signature> signatureList)
+        /// <summary>
+        /// Returns a list of known file signatures, from the signatures.json file, that are associated with a specified header (hexadecimal value) 
+        /// </summary>
+        /// <param name="searchHexKeyWord">File header (hexadecimal value) to be searched</param>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        public static void DisplayHeadersSearchByHex(string searchHexKeyWord, in List<Signature> signatureList)
         {
             try
             {
-                int signature1 = signatureList.FindAll(x => x.Hex.ToLower().Contains(searchKeyWord.ToLower())).Count;
+                int signature1 = signatureList.FindAll(x => x.Hex.ToLower().Contains(searchHexKeyWord.ToLower())).Count;
                 if (signature1 > 0)
                 {
                     Console.WriteLine("\n----------------------------------------------------------------------------------------------");
@@ -601,7 +619,7 @@ namespace fh_res
                     Console.WriteLine("----------------------------------------------------------------------------------------------");
                     Console.WriteLine("Note:  Use the ID as FileIndex when pacthing headers with  -pb \"FilePath\" \"FileIndex\"");
                     Console.WriteLine($"\nTotal Records:  {signature1}");
-                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Hex.ToLower().Contains(searchKeyWord.ToLower())))) //Convert all input to lowercase for searching
+                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Hex.ToLower().Contains(searchHexKeyWord.ToLower())))) //Convert all input to lowercase for searching
                     {
                         Console.WriteLine("\n{0,-15} {1,-120}", "ID:", tempSignature.Id);
                         Console.WriteLine("{0,-15} {1,-120}", "Extension:", tempSignature.Name);
@@ -613,7 +631,7 @@ namespace fh_res
                     }
                     Console.WriteLine("----------------------------------------------------------------------------------------------");
                 }
-                else { Console.WriteLine($"\nNo matching records were found for hex string:  {searchKeyWord}"); }             
+                else { Console.WriteLine($"\nNo matching records were found for hex string:  {searchHexKeyWord}"); }             
             }
             catch (Exception ex)
             {
@@ -621,6 +639,11 @@ namespace fh_res
             }
         }
 
+        /// <summary>
+        /// Returns a file hash of a specified file
+        /// </summary>
+        /// <param name="fileFullPath">Full path of the file to hash</param>
+        /// <param name="hashType">Hashing algorithm to implement.  Options include:  MD5, SHA1, SHA256, SHA384, and SHA512</param>
         public static void DisplayFileHash(string fileFullPath, string hashType)
         {
             try
