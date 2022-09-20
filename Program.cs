@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
@@ -16,6 +17,7 @@ using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+//Update
 //JSON retrieved from https://github.com/qti3e renamed file to signatures.json
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\signatures.json";
 List<Signature> signature = new();
@@ -26,14 +28,15 @@ switch (args[0])
     case "-h":
         Console.WriteLine("\n------------------------------------------------------------------------------------------------------------------------------------------------");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
-        Console.WriteLine("-------------------------                                 FILE HEADER RESOLVER v1.0  (BETA)                                ---------------------");
+        Console.WriteLine("-------------------------                              FILE SIGNATURE RESOLVER v1.0  (BETA)                                ---------------------");
         Console.WriteLine("-------------------------                                                    with added patching/carving/hashing features  ---------------------");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
         Console.WriteLine("***NOTE:  Use at your own risk.  Patching header bytes can render the file unusable.  Always backup files prior to patching the headers. ");
         Console.WriteLine("\n{0,-25} {1,-60} {2,-50}", "Command/s", "Usage", "Notes");
         Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
-        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-dh (display header)", "-dh", "Return all stored headers.  Use | more for paging");
+        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-dh (display header)", "-dh", "Display all file signatures that are contained within the");
+        Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "accompanying database (JSON file).  Use | more for paging");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-dh --search-ext", "-dh --search-ext \"keyword\"", "Case-insensitive search");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "", "", "Contained within search e.g. \"if\" returns GIF");
         Console.WriteLine("{0,-25} {1,-60} {2,-50}", "-dh --search-hex", "-dh --search-hex \"hex value\\s\"", "Must NOT be space seperated e.g. \"4D5A\"");
