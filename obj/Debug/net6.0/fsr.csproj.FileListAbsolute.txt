@@ -17,3 +17,22 @@ C:\Users\Admin\Documents\repos\fh_res\fh_res\obj\Debug\net6.0\refint\fsr.dll
 C:\Users\Admin\Documents\repos\fh_res\fh_res\obj\Debug\net6.0\fsr.pdb
 C:\Users\Admin\Documents\repos\fh_res\fh_res\obj\Debug\net6.0\fsr.genruntimeconfig.cache
 C:\Users\Admin\Documents\repos\fh_res\fh_res\obj\Debug\net6.0\ref\fsr.dll
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\bin\Debug\net6.0\fsr.exe
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\bin\Debug\net6.0\fsr.deps.json
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\bin\Debug\net6.0\fsr.runtimeconfig.json
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\bin\Debug\net6.0\fsr.dll
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\bin\Debug\net6.0\fsr.pdb
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.csproj.AssemblyReference.cache
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.Properties.Resources.resources
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.csproj.GenerateResource.cache
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.AssemblyInfoInputs.cache
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.AssemblyInfo.cs
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.csproj.CopyComplete
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.dll
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\refint\fsr.dll
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.pdb
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\fsr.genruntimeconfig.cache
+C:\Users\Admin\Documents\repos\fh_res -use this one\fh_res\obj\Debug\net6.0\ref\fsr.dll
