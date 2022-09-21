@@ -11,13 +11,13 @@ A windows console tool that automates some of the manual tasks of reviewing a sp
 
 Argument | Description
 ------------ | -------------
-<sub>-h<sub>  | xxx
-<sub>-dh<sub>  | xxx
-<sub>-dh --search-ext `searchExtKeyWord`<sub> | xxx
-<sub>-dh --search-hex `searchHexKeyWord`<sub> | xxx
-<sub>-ft `fileFullPath`<sub> | xxx
-<sub>-ft `fileFullPath` `fileOutputFullPath`<sub> | newfile ending '_fhgen_random number' is created is file exists
-<sub>-pb `fileFullPath` `searchId`<sub> | xxx
-<sub>-pc `fileFullPath` `hexSequence` `startingHexOffSet`<sub> | xxx
-<sub>-cb `fileFullPath` `startingHexOffSet` `endingHexOffSet` `fileOutputFullPath`<sub> | xxx
-<sub>-fh `fileFullPath` `hashType`<sub> | xxx
+-h  | xxx
+-dh  | xxx
+-dh --search-ext `searchExtKeyWord` | xxx
+-dh --search-hex `searchHexKeyWord` | xxx
+-ft `fileFullPath` | xxx
+-ft `fileFullPath` `fileOutputFullPath` | newfile ending '_fhgen_random number' is created is file exists
+-pb `fileFullPath` `searchId` | xxx
+-pc `fileFullPath` `hexSequence` `startingHexOffSet` | xxx
+-cb `fileFullPath` `startingHexOffSet` `endingHexOffSet` `fileOutputFullPath` | xxx
+-fh `fileFullPath` `hashType` | xxx
