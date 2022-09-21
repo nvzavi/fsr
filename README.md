@@ -23,4 +23,83 @@ Argument | Description
 -cb `fileFullPath` `startingHexOffSet` `endingHexOffSet` `fileOutputFullPath` | Carve out a byte sequence from the specified file `fileFullPath` at starting offset `startingHexOffSet` and ending offset `endingHexOffSet`.  <br/> <br/> The ouput is written to file `fileOutputFullPath`.
 -fh `fileFullPath` `hashType` | Generate the required hash value for the specified file `fileFullPath` using the hash algorithm `hashType`.  <br/> <br/> Hashing options for `hashType` include:  md5, sha1, sha256, sha384 and sha512.
 
-<h2> Examples: <h2>
+Examples: 
+--------
+Command:  fsr -dh
+<br/>Output:  
+> ```
+> ID:                  13
+> Extension:           doc
+> Offset:              512 (base 10) / 0x200 (base 16)
+> Value at offset:     ECA5C100 (base 16)
+> ASCII:               ì¥A
+> MIME:                application/msword
+> ---------------------------------------------
+> ID:                  14
+> Extension:           mxf
+> Offset:              0 (base 10) / 0x0 (base 16)
+> Value at offset:     060E2B34020501010D0102010102 (base 16)
+> ASCII:               +4
+> MIME:                application/mxf
+> ```
+Command:  fsr -dh --search-ext doc
+<br/>Output:
+> ```
+> ID:                  13
+> Extension:           doc
+> Offset:              512 (base 10) / 0x200 (base 16)
+> Value at offset:     ECA5C100 (base 16)
+> ASCII:               ì¥A
+> MIME:                application/msword
+> ---------------------------------------------
+> ID:                  87
+> Extension:           docx
+> Offset:              0 (base 10) / 0x0 (base 16)
+> Value at offset:     504B030414000600 (base 16)
+> ASCII:               PK
+> MIME:                application/vnd.openxmlformats-officedocument.wordprocessingml.document
+> ```
+Command:  fsr -dh --search-hex 504B
+<br/>Output:
+> ```
+> ID:                  87
+> Extension:           docx
+> Offset:              0 (base 10) / 0x0 (base 16)
+> Value at offset:     504B030414000600 (base 16)
+> ASCII:               PK
+> MIME:                application/vnd.openxmlformats-officedocument.wordprocessingml.document
+> ---------------------------------------------
+> ID:                  207
+> Extension:           jar
+> Offset:              0 (base 10) / 0x0 (base 16)
+> Value at offset:     504B0304140008000800 (base 16)
+> ASCII:               PK
+> MIME:                application/x-java-archive
+> ```
+Command:  fsr -ft C:\folder\fileName.docx
+<br/>Output:
+> ```
+> Probability:                   high
+> Extension:                     docx
+> Offset (expected):             0 (base 10) - 0x0(base 16)
+> Hexadecimal (expected):        504B030414000600
+> ASCII (expected):              PK
+> Mime:                          application/vnd.openxmlformats-officedocument.wordprocessingml.document
+> 
+> Additional file signature entries for 'docx' with hexadecimal value '504B030414000600' were found within the current file
+> Located Offset/s:              0x0 <--match / 0x393 / 0x6B3 / 0x8E9 / 0xB81 / 0x11D8 ***
+> ----------------------------------------------------------------------------------------------
+> Probability:                   low
+> Extension:                     ntf
+> Offset (expected):             0 (base 10) - 0x0(base 16)
+> Hexadecimal (expected):        1A0000
+> ASCII (expected):
+> Mime:                          application/vnd.lotus-notes
+> 
+> Additional file signature entries for 'ntf' with hexadecimal value '1A0000' were found within the current file
+> Located Offset/s:              0xB98 / 0x2AA7
+Command:  fsr -ft C:\folder\fileName.docx C:\folder\output.txt
+<br/>Output:
+> ```
+> Output written to file: C:\folder\output.txt
+> ```
