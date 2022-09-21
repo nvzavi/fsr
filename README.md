@@ -103,3 +103,38 @@ Command:  fsr -ft C:\folder\fileName.docx C:\folder\output.txt
 > ```
 > Output written to file: C:\folder\output.txt
 > ```
+Command:  fsr -pb C:\folder\fileName.docx 87
+<br/>Output:
+> ```
+> Ensure you have backed up file C:\folder\fileName.docx
+> Confirm:  Write '504B030414000600' (base 16) byte values matching extension 'docx' starting at Offset '0x0' (type y or n):y
+> ```
+> Type the letter y (for YES) to confirm 
+> ```
+> Patch Applied!!!
+> Use '004B030414000600' (base 16) byte values starting at offset 0x0 to revert back to the original byte sequence
+> Command: -pc "C:\folder\fileName.docx" "004B030414000600" "0x0"
+> ```
+Command:  fsr -pc C:\folder\fileName.docx 4B03 0x1
+<br/>Output:
+> ```
+> Ensure you have backed up file C:\folder\fileName.docx
+> Confirm:  Write '4B03' (base 16) byte values starting at Offset '0x1' (type y or n):y
+> ```
+> Type the letter y (for YES) to confirm 
+> ```
+> Patch Applied!!!
+> Use '1234' (base 16) byte values starting at offset 0x1 to revert back to the original byte sequence
+> Command: -pc "C:\folder\fileName.docx" "1234" "0x1"
+> ```
+Command:  fsr -cb C:\folder\fileName.docx 0xA0 0x145 C:\folder\output.txt
+<br/>Output:
+> ```
+> Output successfully written to C:\folder\output.txt!!!
+> ```
+Command:  fsr -fh C:\folder\fileName.docx md5
+<br/>Command:  fsr -fh C:\folder\fileName.docx sha1
+<br/>Command:  fsr -fh C:\folder\fileName.docx sha256
+<br/>Command:  fsr -fh C:\folder\fileName.docx sha384
+<br/>Command:  fsr -fh C:\folder\fileName.docx sha512
+<br/>Output: Each above command with produce the hash value associated with the selected `hashType`
