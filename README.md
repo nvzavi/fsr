@@ -23,12 +23,30 @@ Argument | Description
 -cb `fileFullPath` `startingHexOffSet` `endingHexOffSet` `fileOutputFullPath` | Carve out a byte sequence from the specified file `fileFullPath` at starting offset `startingHexOffSet` and ending offset `endingHexOffSet`.  <br/> <br/> The ouput is written to file `fileOutputFullPath`.
 -fh `fileFullPath` `hashType` | Generate the required hash value for the specified file `fileFullPath` using the hash algorithm `hashType`.  <br/> <br/> Hashing options for `hashType` include:  md5, sha1, sha256, sha384 and sha512.<br/><br/> The results are displayed in the console window.
 
+Output Field Description when using the -dh argument
+--------
+> ID:
+> <br/>Extension:
+> <br/>Offset:
+> <br/>ASCII:
+> <br/>MIME:
+
+Output Field Description when using the -ft argument
+--------
+> Probability:
+> <br/>Extension:
+> <br/>Offset (expected):
+> <br/>Hexadecimal (expected):
+> <br/>ASCII (expected):
+> <br/>Mime:
+> <br/>Located Offset/s:
+
 Examples: 
 --------
 > Return all file signature attributes that is contained within the signature JSON file.
 > --------
 > Command:  `fsr -dh`
-> <br/>Output:  
+> <br/>Output: 
 > ```
 > ID:                  13
 > Extension:           doc
