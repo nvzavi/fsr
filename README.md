@@ -23,23 +23,28 @@ Argument | Description
 -cb `fileFullPath` `startingHexOffSet` `endingHexOffSet` `fileOutputFullPath` | Carve out a byte sequence from the specified file `fileFullPath` at starting offset `startingHexOffSet` and ending offset `endingHexOffSet`.  <br/> <br/> The ouput is written to file `fileOutputFullPath`.
 -fh `fileFullPath` `hashType` | Generate the required hash value for the specified file `fileFullPath` using the hash algorithm `hashType`.  <br/> <br/> Hashing options for `hashType` include:  md5, sha1, sha256, sha384 and sha512.<br/><br/> The results are displayed in the console window.
 
-Output Field Description when using the -dh argument
---------
-> ID:
-> <br/>Extension:
-> <br/>Offset:
-> <br/>ASCII:
-> <br/>MIME:
+<h2>Output Field Description when using the -dh argument</h2>
 
-Output Field Description when using the -ft argument
---------
-> Probability:
-> <br/>Extension:
-> <br/>Offset (expected):
-> <br/>Hexadecimal (expected):
-> <br/>ASCII (expected):
-> <br/>Mime:
-> <br/>Located Offset/s:
+Field | Description
+------------ | -------------
+ID | Unique value that identifies a specific file signature and related attributes
+Extension | File extension
+Offset | Starting offset of the file signature (byte sequence). *(Display as decimal (base 10) and hexadecimal (base 16) values.)*
+Value at offset | Signature byte sequence. *(Displayed as a hexadecimal (base 16) value.)*  
+ASCII | ASCII representation of the 'Value at offset' field
+MIME | File MIME type
+
+<h2>Output Field Description when using the -ft argument</h2>
+
+Field | Description
+------------ | -------------
+Probability | Degree of certainty that the file (passed as an argument) is associated with a listed signature that is contained within the signature JSON file.
+Extension | File extension
+Offset (expected) | Starting offset of the file signature (byte sequence). *(Display as decimal (base 10) and hexadecimal (base 16) values.)*
+Hexadecimal (expected) | Signature byte sequence. *(Displayed as a hexadecimal (base 16) value.)*  
+ASCII (expected) | ASCII representation of the 'Value at offset' field
+MIME | File MIME type
+Located Offset/s | xxx
 
 Examples: 
 --------
