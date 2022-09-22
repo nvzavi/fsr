@@ -2,7 +2,7 @@
 
 Thanks to [@qti3e](https://github.com/qti3e) for supplying the extensions database in JSON. I use this file as the reference database for this tool and it can be found  [here.](https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)
 
-This is a small personal project, a windows console tool that automates some of the manual tasks of reviewing a specified file's signature and overall layout (at a byte level).
+This is a small personal project, a windows console tool that automates some of the manual tasks of reviewing a specified file's signature and overall layout.
 * The following tasks are automated *(based on your selected usage argument)*:  
   * Lookup the file signature of various file types that is contained within the accompanying JSON file
   * Quickly Identify the file signature that might by associated with a specified file 
