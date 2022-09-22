@@ -9,7 +9,7 @@ This is a small personal project, a windows console tool that automates some of 
   * Quickly patch a file's signature byte sequence that may be suspected of file signature tampering using an available signature that is contained within the accompanying JSON file
   * Quickly patch a file's signature byte sequence that may be suspected of file signature tampering using a custom byte sequence 
   * Quickly carve a byte sequence within a specifed offset range and pipe the output to file.
-  * Generate MD5 / SHA1 / SHA256 / SHA384 / SHA512 hashes of a specified byte.
+  * Generate MD5 / SHA1 / SHA256 / SHA384 / SHA512 hashes of a specified file.
 
 <h2>Arguments include:</h2>
 
