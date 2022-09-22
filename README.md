@@ -1,4 +1,7 @@
 # File Signature Resolver (fsr) BETA
+
+Thanks to @qti3e for supplying the extensions database in JSON. I use this file as my reference database for this tool and it can be found at 
+
 A windows console tool that automates some of the manual tasks of reviewing a specified file's signature and overall layout (at a byte level) inorder to ascertain the true nature of the specified file's intentions (example: check if it may be injected and as such, verify if its a possible dropper).
 * The following tasks are automated *(based on your selected usage argument)*:  
   * Lookup the file signature of various file types that is contained within the accompanying signature JSON file
