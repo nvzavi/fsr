@@ -1,6 +1,6 @@
 # File Signature Resolver (fsr) BETA
 
-Thanks to [@qti3e](https://github.com/qti3e) for supplying the extensions database in JSON. I use this file as the reference database for this tool and it can be found  [here.](https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)
+Thanks to [@qti3e](https://github.com/qti3e) for supplying the extensions database in JSON. I use this JSON file as the reference database for this tool and it can be found  [here.](https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)
 
 This is a small personal project, a windows console tool that automates some of the manual tasks of reviewing/analysing/updating a specified file's signature and overall structure/contents.
 * The following tasks are automated *(based on your selected usage argument)*:  
