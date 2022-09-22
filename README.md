@@ -25,8 +25,10 @@ Argument | Description
 
 Examples: 
 --------
-Command:  fsr -dh
-<br/>Output:  
+> Return all file signature attributes that is contained within the signature JSON file.
+> --------
+> Command:  fsr -dh
+> <br/>Output:  
 > ```
 > ID:                  13
 > Extension:           doc
@@ -42,8 +44,10 @@ Command:  fsr -dh
 > ASCII:               +4
 > MIME:                application/mxf
 > ```
-Command:  fsr -dh --search-ext doc
-<br/>Output:
+> Return all file signature attributes (contained within the signature JSON file) that matches with the 'doc' file extension.
+> --------
+> Command:  fsr -dh --search-ext doc
+> <br/>Output:
 > ```
 > ID:                  13
 > Extension:           doc
@@ -59,8 +63,10 @@ Command:  fsr -dh --search-ext doc
 > ASCII:               PK
 > MIME:                application/vnd.openxmlformats-officedocument.wordprocessingml.document
 > ```
-Command:  fsr -dh --search-hex 504B
-<br/>Output:
+> Return all file signature attributes (contained within the signature JSON file) that matches with the byte sequence '504B'.
+> --------
+> Command:  fsr -dh --search-hex 504B
+> <br/>Output:
 > ```
 > ID:                  87
 > Extension:           docx
@@ -76,8 +82,10 @@ Command:  fsr -dh --search-hex 504B
 > ASCII:               PK
 > MIME:                application/x-java-archive
 > ```
-Command:  fsr -ft C:\folder\fileName.docx
-<br/>Output:
+> Return all possible file signatures (matched with the signature JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'.
+> --------
+> Command:  fsr -ft C:\folder\fileName.docx
+> <br/>Output:
 > ```
 > Probability:                   high
 > Extension:                     docx
@@ -98,13 +106,19 @@ Command:  fsr -ft C:\folder\fileName.docx
 > 
 > Additional file signature entries for 'ntf' with hexadecimal value '1A0000' were found within the current file
 > Located Offset/s:              0xB98 / 0x2AA7
-Command:  fsr -ft C:\folder\fileName.docx C:\folder\output.txt
-<br/>Output:
+> ```
+> Return all possible file signatures (matched with the signature JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'. Output is written to file 'C:\folder\output.txt'.
+> --------
+> Command:  fsr -ft C:\folder\fileName.docx C:\folder\output.txt
+> <br/>Output:
 > ```
 > Output written to file: C:\folder\output.txt
 > ```
-Command:  fsr -pb C:\folder\fileName.docx 87
-<br/>Output:
+> Patch 'C:\folder\fileName.docx' file signature byte sequence with signature ID '87' 
+> --------
+> <sub>  *NOTE:  signature ID is retrieved using the -dh command, see `command:  fsr -dh --search-ext doc` above as an example* </sub>
+> <br/><br/>Command:  fsr -pb C:\folder\fileName.docx 87
+> <br/>Output:
 > ```
 > Ensure you have backed up file C:\folder\fileName.docx
 > Confirm:  Write '504B030414000600' (base 16) byte values matching extension 'docx' starting at Offset '0x0' (type y or n):y
