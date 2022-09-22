@@ -38,13 +38,13 @@ MIME | File MIME type
 
 Field | Description
 ------------ | -------------
-Probability | Degree of certainty that the file (passed as an argument) is associated with a listed signature that is contained within the signature JSON file.
-Extension | File extension
-Offset (expected) | Starting offset of the file signature (byte sequence). *(Display as decimal (base 10) and hexadecimal (base 16) values.)*
-Hexadecimal (expected) | Signature byte sequence. *(Displayed as a hexadecimal (base 16) value.)*  
-ASCII (expected) | ASCII representation of the 'Value at offset' field
-MIME | File MIME type
-Located Offset/s | xxx
+Probability | Degree of certainty that the file (passed as an argument) is associated with a listed signature that is contained within the signature JSON file. *(Values include:  'High' or 'Low')*
+Extension | File extension as contained within the signature JSON file.
+Offset (expected) | Starting offset of the file signature (byte sequence) for the above extension, as contained within the signature JSON file. *(Display as decimal (base 10) and hexadecimal (base 16) values.)*
+Hexadecimal (expected) | Signature byte sequence, for the above extension, as contained within the signature JSON file.. *(Displayed as a hexadecimal (base 16) value.)* 
+ASCII (expected) | ASCII representation of the 'Hexadecimal (expected)' field
+MIME | File MIME type,  for the above extension,  as contained within the signature JSON file
+Located Offset/s | Starting offset/s, within the file that was passed as an argument, at which the above mentioned file signature 'Hexadecimal (expected)' value have been located. <br/><br/> An identical match occurs when a file signature's 'Hexadecimal (expected)' value and 'Offset (expected)' value matches with the file's (passed as an argument) byte sequence and offset.  In the event of an identical match, the string value '<--match' is placed alongside the matched offset.
 
 Examples: 
 --------
