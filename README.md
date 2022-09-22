@@ -4,9 +4,9 @@ Thanks to [@qti3e](https://github.com/qti3e) for supplying the extensions databa
 
 This is small personal project, a windows console tool that automates some of the manual tasks of reviewing a specified file's signature and overall layout (at a byte level) inorder to ascertain the true nature of the specified file's intentions (example: check if it may be injected and as such, verify if its a possible dropper).
 * The following tasks are automated *(based on your selected usage argument)*:  
-  * Lookup the file signature of various file types that is contained within the accompanying signature JSON file
+  * Lookup the file signature of various file types that is contained within the accompanying JSON file
   * Quickly Identify the file signature that might by associated with a specified file 
-  * Quickly patch a file's signature byte sequence that may be suspected of file signature tampering using an available signature that is contained within the accompanying signature JSON file
+  * Quickly patch a file's signature byte sequence that may be suspected of file signature tampering using an available signature that is contained within the accompanying JSON file
   * Quickly patch a file's signature byte sequence that may be suspected of file signature tampering using a custom byte sequence 
   * Quickly carve a byte sequence within a specifed offset range.
   * Generate MD5 / SHA1 / SHA256 / SHA384 / SHA512 hashes of a specified byte.
@@ -16,9 +16,9 @@ This is small personal project, a windows console tool that automates some of th
 Argument | Description
 ------------ | -------------
 -h  | Display the help items in the console window.
--dh  | Return the complete list of file signatures together with additional signature attributes that is contained within the accompanying signature JSON file.<br/><br/> The results are displayed in the console window.
--dh --search-ext `searchExtKeyWord` | Return a list of file signatures that matched with the specified file extension `searchExtKeyWord` and the extension that is contained within the accompanying signature JSON file.<br/><br/> The results are displayed in the console window.
--dh --search-hex `searchHexKeyWord` | Return a list of file signatures that matched with the specified byte sequence in hex (base 16) `searchHexKeyWord` and the byte sequence that is contained within the accompanying signature JSON file.<br/><br/> The results are displayed in the console window. 
+-dh  | Return the complete list of file signatures together with additional signature attributes that is contained within the accompanying JSON file.<br/><br/> The results are displayed in the console window.
+-dh --search-ext `searchExtKeyWord` | Return a list of file signatures that matched with the specified file extension `searchExtKeyWord` and the extension that is contained within the accompanying JSON file.<br/><br/> The results are displayed in the console window.
+-dh --search-hex `searchHexKeyWord` | Return a list of file signatures that matched with the specified byte sequence in hex (base 16) `searchHexKeyWord` and the byte sequence that is contained within the accompanying JSON file.<br/><br/> The results are displayed in the console window. 
 -ft `fileFullPath` | Return a list possible file signatures that may be associated with the specified file `fileFullPath`. <br/><br/> The output is listed/sorted by degree of probability "high" to "low".<br/><br/> The results are displayed in the console window.
 -ft `fileFullPath` `fileOutputFullPath` | Return a list possible file signatures that may be associated with the specified file `fileFullPath`, and the ouput is wrriten to file `fileOutputFullPath`.<br/><br/> If the argument `fileOutputFullPath` already exists then a new file with the same file name together with an appended string '\_fhgen\_{random number}' will be created.<br/><br/> The output is listed/sorted by degree of probability "high" to "low".
 -pb `fileFullPath` `searchId` | Patch a specified file's signature `fileFullPath` byte sequence with an available signature ID `searchId` that is associated with a particular file type contained within the accompanying signature JSON file.<br/><br/> The results are displayed in the console window.
@@ -41,17 +41,17 @@ MIME | File MIME type
 
 Field | Description
 ------------ | -------------
-Probability | Degree of certainty that the file (passed as an argument) is associated with a listed signature that is contained within the signature JSON file. *(Values include:  'High' or 'Low')*
+Probability | Degree of certainty that the file (passed as an argument) is associated with a listed signature that is contained within the JSON file. *(Values include:  'High' or 'Low')*
 Extension | File extension as contained within the signature JSON file.
-Offset (expected) | Starting offset of the file signature (byte sequence) for the above extension, as contained within the signature JSON file. *(Display as decimal (base 10) and hexadecimal (base 16) values.)*
-Hexadecimal (expected) | Signature byte sequence, for the above extension, as contained within the signature JSON file.. *(Displayed as a hexadecimal (base 16) value.)* 
+Offset (expected) | Starting offset of the file signature (byte sequence) for the above extension, as contained within the JSON file. *(Display as decimal (base 10) and hexadecimal (base 16) values.)*
+Hexadecimal (expected) | Signature byte sequence, for the above extension, as contained within the JSON file.. *(Displayed as a hexadecimal (base 16) value.)* 
 ASCII (expected) | ASCII representation of the 'Hexadecimal (expected)' field
-MIME | File MIME type,  for the above extension,  as contained within the signature JSON file
+MIME | File MIME type,  for the above extension,  as contained within the JSON file
 Located Offset/s | Starting offset/s, within the file that was passed as an argument, at which the above mentioned file signature 'Hexadecimal (expected)' value have been located. <br/><br/> An identical match occurs when a file signature's 'Hexadecimal (expected)' value and 'Offset (expected)' value matches with the file's (passed as an argument) byte sequence and offset.  In the event of an identical match, the string value '<--match' is placed alongside the matched offset.
 
 Examples: 
 --------
-> Return all file signature attributes that is contained within the signature JSON file.
+> Return all file signature attributes that is contained within the JSON file.
 > --------
 > Command:  `fsr -dh`
 > <br/>Output: 
@@ -70,7 +70,7 @@ Examples:
 > ASCII:               +4
 > MIME:                application/mxf
 > ```
-> Return all file signature attributes (contained within the signature JSON file) that matches with the 'doc' file extension.
+> Return all file signature attributes (contained within the JSON file) that matches with the 'doc' file extension.
 > --------
 > Command:  `fsr -dh --search-ext doc`
 > <br/>Output:
@@ -89,7 +89,7 @@ Examples:
 > ASCII:               PK
 > MIME:                application/vnd.openxmlformats-officedocument.wordprocessingml.document
 > ```
-> Return all file signature attributes (contained within the signature JSON file) that matches with the byte sequence '504B'.
+> Return all file signature attributes (contained within the JSON file) that matches with the byte sequence '504B'.
 > --------
 > Command:  `fsr -dh --search-hex 504B`
 > <br/>Output:
@@ -108,7 +108,7 @@ Examples:
 > ASCII:               PK
 > MIME:                application/x-java-archive
 > ```
-> Return all possible file signatures (matched with the signature JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'.
+> Return all possible file signatures (matched with the JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'.
 > --------
 > Command:  `fsr -ft C:\folder\fileName.docx`
 > <br/>Output:
@@ -133,7 +133,7 @@ Examples:
 > Additional file signature entries for 'ntf' with hexadecimal value '1A0000' were found within the current file
 > Located Offset/s:              0xB98 / 0x2AA7
 > ```
-> Return all possible file signatures (matched with the signature JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'. Output is written to file 'C:\folder\output.txt'.
+> Return all possible file signatures (matched with the JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'. Output is written to file 'C:\folder\output.txt'.
 > --------
 > Command:  `fsr -ft C:\folder\fileName.docx C:\folder\output.txt`
 > <br/>Output:
