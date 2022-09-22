@@ -27,7 +27,7 @@ Examples:
 --------
 > Return all file signature attributes that is contained within the signature JSON file.
 > --------
-> Command:  fsr -dh
+> Command:  `fsr -dh`
 > <br/>Output:  
 > ```
 > ID:                  13
@@ -46,7 +46,7 @@ Examples:
 > ```
 > Return all file signature attributes (contained within the signature JSON file) that matches with the 'doc' file extension.
 > --------
-> Command:  fsr -dh --search-ext doc
+> Command:  `fsr -dh --search-ext doc`
 > <br/>Output:
 > ```
 > ID:                  13
@@ -65,7 +65,7 @@ Examples:
 > ```
 > Return all file signature attributes (contained within the signature JSON file) that matches with the byte sequence '504B'.
 > --------
-> Command:  fsr -dh --search-hex 504B
+> Command:  `fsr -dh --search-hex 504B`
 > <br/>Output:
 > ```
 > ID:                  87
@@ -84,7 +84,7 @@ Examples:
 > ```
 > Return all possible file signatures (matched with the signature JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'.
 > --------
-> Command:  fsr -ft C:\folder\fileName.docx
+> Command:  `fsr -ft C:\folder\fileName.docx`
 > <br/>Output:
 > ```
 > Probability:                   high
@@ -109,7 +109,7 @@ Examples:
 > ```
 > Return all possible file signatures (matched with the signature JSON file) that may be associated with the file type for 'C:\folder\fileName.docx'. Output is written to file 'C:\folder\output.txt'.
 > --------
-> Command:  fsr -ft C:\folder\fileName.docx C:\folder\output.txt
+> Command:  `fsr -ft C:\folder\fileName.docx C:\folder\output.txt`
 > <br/>Output:
 > ```
 > Output written to file: C:\folder\output.txt
@@ -117,7 +117,7 @@ Examples:
 > Patch 'C:\folder\fileName.docx' file signature byte sequence with signature ID '87' 
 > --------
 > <sub>  *NOTE:  signature ID is retrieved using the -dh command, see `command:  fsr -dh --search-ext doc` above as an example* </sub>
-> <br/><br/>Command:  fsr -pb C:\folder\fileName.docx 87
+> <br/><br/>Command:  `fsr -pb C:\folder\fileName.docx 87`
 > <br/>Output:
 > ```
 > Ensure you have backed up file C:\folder\fileName.docx
@@ -131,7 +131,7 @@ Examples:
 > ```
 > Patch 'C:\folder\fileName.docx' with a custom byte sequence '4B03' starting offset '0x1'.
 > --------
-> Command:  fsr -pc C:\folder\fileName.docx 4B03 0x1
+> Command:  `fsr -pc C:\folder\fileName.docx 4B03 0x1`
 > <br/>Output:
 > ```
 > Ensure you have backed up file C:\folder\fileName.docx
@@ -145,16 +145,16 @@ Examples:
 > ```
 > Carve out a byte sequence from 'C:\folder\fileName.docx' starting at offset '0xA0' and ending at offset '0x145'.  The ouput is written to 'C:\folder\output.txt'.
 > --------
-> Command:  fsr -cb C:\folder\fileName.docx 0xA0 0x145 C:\folder\output.txt
+> Command:  `fsr -cb C:\folder\fileName.docx 0xA0 0x145 C:\folder\output.txt`
 > <br/>Output:
 > ```
 > Output successfully written to C:\folder\output.txt!!!
 > ```
 > Generate hash values for 'C:\folder\fileName.docx' using the following commands. 
 > --------
-> Command:  fsr -fh C:\folder\fileName.docx md5
-> <br/>Command:  fsr -fh C:\folder\fileName.docx sha1
-> <br/>Command:  fsr -fh C:\folder\fileName.docx sha256
-> <br/>Command:  fsr -fh C:\folder\fileName.docx sha384
-> <br/>Command:  fsr -fh C:\folder\fileName.docx sha512
+> Command:  `fsr -fh C:\folder\fileName.docx md5`
+> <br/>Command:  `fsr -fh C:\folder\fileName.docx sha1`
+> <br/>Command:  `fsr -fh C:\folder\fileName.docx sha256`
+> <br/>Command:  `fsr -fh C:\folder\fileName.docx sha384`
+> <br/>Command:  `fsr -fh C:\folder\fileName.docx sha512`
 
