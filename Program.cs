@@ -17,9 +17,9 @@ using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-//Update20220921_changed
-//JSON retrieved from https://github.com/qti3e renamed file to signatures.json
-string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\signatures.json";
+
+//really cool extensions.json file is used as my reference database and it was retreived from https://github.com/qti3e (Specific gist https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)
+string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\extensions.json";
 List<Signature> signature = new();
 FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: ref signature);
 
