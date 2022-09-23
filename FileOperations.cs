@@ -428,7 +428,7 @@ namespace fh_res
             {
                 string revertByte = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: signatureList[searchId - 1].Offset,
                 lengthToRead: Convert.FromHexString(signatureList[searchId - 1].Hex).Length); //last arg converts hex to byte then counts length FIX FromHexString see custompatch void String.Format("0x{0:X}"
-                Console.WriteLine($"Ensure you have backep up file {fileFullPath}");
+                Console.WriteLine($"Ensure you have backed up file {fileFullPath}");
                 Console.Write($"Confirm:  Write '{signatureList[searchId - 1].Hex}' (base 16) byte values matching extension '{signatureList[searchId - 1].Name}' " 
                     + $"starting at Offset '{String.Format("0x{0:X}", signatureList[searchId - 1].Offset)}' (type y or n):"); //String.Format("0x{0:X}",Convert.ToInt32(signatureRow.Offset))  -- signatureList[searchId - 1].Offset
                 //TODO:  NEED TO CONVERT ALL PACTHING VALUES TO BASE 16
@@ -469,7 +469,7 @@ namespace fh_res
                 string revertByte = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: Convert.ToInt32(startingHexOffSet, 16),
                     lengthToRead: Convert.FromHexString(hexSequence.Replace("0x", "").Replace(" ", "")).Length); //last arg converts hex to byte then counts length
 
-                Console.WriteLine($"Ensure you have backep up file {fileFullPath}");
+                Console.WriteLine($"Ensure you have backed up file {fileFullPath}");
                 Console.Write($"Confirm:  Write '{hexSequence}' (base 16) byte values starting at Offset '{String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))}' (type y or n):"); //startingHexOffSet
                 if (Console.ReadKey().Key == ConsoleKey.Y)
                 {
