@@ -27,20 +27,20 @@ namespace fh_res
                 List<StagingSignature> stagingSignature = new();
 
                 using StreamReader r = new(signatureListFilePath);
-                string json = r.ReadToEnd(); //read the JSON file
-                var jo = JObject.Parse(json); //initialise an object to iterate through the nodes
+                string json = r.ReadToEnd(); 
+                var jo = JObject.Parse(json); 
 
                 foreach (var kv in jo)
                 {
                     if (kv.Value != null)
                     {
-                        var deserializable = kv.Value.ToString(); //get deserializable children
+                        var deserializable = kv.Value.ToString(); 
 
-                        if (kv.Key != null) //Get the Name.  Name is the root node e.g. 123
+                        if (kv.Key != null) 
                         {
                             var sign = JsonConvert.DeserializeObject<StagingSignature>(deserializable);
                             sign.Name = kv.Key;
-                            stagingSignature.Add(sign);//deserialise each node and add to signature object
+                            stagingSignature.Add(sign);
                         }
                     }
                 }
@@ -49,10 +49,10 @@ namespace fh_res
                 foreach (StagingSignature signs in stagingSignature)
                 {
 
-                    foreach (var val in signs.Signs) //access signature list attribute
+                    foreach (var val in signs.Signs) 
                     {
-                        int offset = Convert.ToInt32(val[..val.IndexOf(',')]); //substring(0,1)
-                        string hexValue = val[(val.IndexOf(',') + 1)..]; //substring(2) old string hexValue = val.Substring(val.IndexOf(',') + 1);
+                        int offset = Convert.ToInt32(val[..val.IndexOf(',')]); 
+                        string hexValue = val[(val.IndexOf(',') + 1)..]; 
                         signatureList.Add(new Signature()
                         {
                             Id = stagingCounter,
@@ -84,7 +84,7 @@ namespace fh_res
             string ascii = string.Empty;
             string hex = String.Empty;
 
-            if (lengthOfHexString != 0) { HexString = HexString[..lengthOfHexString]; } //substring from 0 to lenght
+            if (lengthOfHexString != 0) { HexString = HexString[..lengthOfHexString]; } 
 
             string[] splitValues = HexString.Chunk(2).Select(x => new string(x)).ToArray();
 
@@ -122,30 +122,29 @@ namespace fh_res
                 processedDataTable.Columns.Add(dataColumn);
             }
 
-            foreach (Signature sig in signatureQuery) //loop through all matched records and update datatable with additional attributes locatedPos
+            foreach (Signature sig in signatureQuery) 
             {
-                //get the current offset within the byte sequence
                 string locatedPos = string.Empty;
                 int posCounter = 0;
                 int posValue = 0;
 
                 foreach (var offsetLoc in Offetlocations(searchHex: sig.Hex, fullHex: hexString))
                 {
-                    if (Convert.ToInt32(offsetLoc) % 2 != 0) //if its not an even number then skip execution and proceed to next iteration :  hex found at even number only
+                    if (Convert.ToInt32(offsetLoc) % 2 != 0) 
                     {
                         continue;
                     }
-                    posValue = Convert.ToInt32(offsetLoc) / 2; //divide by 2 to get the byte value
+                    posValue = Convert.ToInt32(offsetLoc) / 2; 
                     string tempOutput = posValue == sig.Offset ? String.Format("0x{0:X}", Convert.ToInt32(offsetLoc) / 2) + " <--match" : String.Format("0x{0:X}",
-                        Convert.ToInt32(offsetLoc) / 2); //assign match string to matched offset
+                        Convert.ToInt32(offsetLoc) / 2); 
 
                     if (posCounter == 0)
                     {
-                        locatedPos = tempOutput.ToString(); //for the first output return only tempOutput  String.Format("0x{0:X}", Convert.ToInt32(tempOutput));
+                        locatedPos = tempOutput.ToString(); 
                     }
                     else if (posCounter <= 5)
                     {
-                        locatedPos = locatedPos + " / " + tempOutput.ToString(); //for every tempOutput where the count is <6, add a trailing slash (/) 
+                        locatedPos = locatedPos + " / " + tempOutput.ToString(); 
                     }
                     else
                     {
@@ -155,23 +154,20 @@ namespace fh_res
                     posCounter++;
                 }
 
-                if (locatedPos!=String.Empty) //if its emtpy then there was possible false flags with nibble overlaps
+                if (locatedPos!=String.Empty) 
                 {
-                    string hexValueAtOffset = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: sig.Offset, lengthToRead: Convert.FromHexString(sig.Hex).Length); //get value at expected offset
-                    var queryResultsToAdd = signatureList.Where(x => x.Offset == sig.Offset && x.Hex == hexValueAtOffset && x.Name == sig.Name); //compare above value to hex value in JSON
+                    string hexValueAtOffset = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: sig.Offset, lengthToRead: Convert.FromHexString(sig.Hex).Length); 
+                    var queryResultsToAdd = signatureList.Where(x => x.Offset == sig.Offset && x.Hex == hexValueAtOffset && x.Name == sig.Name); 
                     processedDataTable.Rows.Add(new object[] { queryResultsToAdd.Any() ? "high" : "low",
                                                 sig.Name,
                                                 sig.Offset.ToString(),
                                                 sig.Hex,
                                                 FileOperations.HexToAscii(HexString: sig.Hex),
                                                 sig.Mime,
-                                                locatedPos });//add results to datatable based on above query
+                                                locatedPos });
                 }
             }
-            //hexValueAtOffset,
-            //                                    FileOperations.HexToAscii(HexString: hexValueAtOffset),
 
-            // sort by first column:
             processedDataTable.DefaultView.Sort = "Col0";
             processedDataTable = processedDataTable.DefaultView.ToTable();
 
@@ -189,20 +185,11 @@ namespace fh_res
                 Console.WriteLine("\n{0,-30} {1,-64}", "Probability:", dRow[0].ToString());
                 Console.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
                 Console.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}",
-                    Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
+                    Convert.ToInt32(dRow[2])) + "(base 16)"); 
                 Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
                 Console.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
-                Console.WriteLine("{0,-30} {1,-64}", "Mime:", dRow[5].ToString()); //added mime
-
-                //if (dRow[0].ToString() == "low")
-                //{
-                //    //Console.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Expected Offset " + dRow[2].ToString() + ":", dRow[6].ToString());
-                //    //Console.WriteLine("{0,-30} {1,-64}", "ASCII at Expected Offset " + dRow[2].ToString() + ":", dRow[7].ToString());
-                //    Console.WriteLine($"Additional file signatures for '{dRow[1]}' with Hexadecimal value '{dRow[3]}' were found within the current file, see offset/s below:");
-
-                //}
+                Console.WriteLine("{0,-30} {1,-64}", "Mime:", dRow[5].ToString()); 
                 Console.WriteLine($"\nAdditional file signature entries for '{dRow[1]}' with hexadecimal value '{dRow[3]}' were found within the current file");
-
                 Console.WriteLine("{0,-30} {1,-64}", "Located Offset/s:", dRow[6].ToString());
                 Console.WriteLine("\n\n----------------------------------------------------------------------------------------------");
             }
@@ -234,25 +221,16 @@ namespace fh_res
             sw.WriteLine($"Processed Date:  {DateTime.Now}");
             sw.WriteLine($"Total Matches Found:  {resultsDataTable.Rows.Count}");
             sw.WriteLine("");
-            // Add some text to file    
             foreach (DataRow dRow in resultsDataTable.Rows)
             {
                 sw.WriteLine("{0,-30} {1,-64}", "Probability:", dRow[0].ToString());
                 sw.WriteLine("{0,-30} {1,-64}", "Extension:", dRow[1].ToString());
                 sw.WriteLine("{0,-30} {1,-64}", "Offset (expected):", dRow[2].ToString() + " (base 10) - " + String.Format("0x{0:X}",
-                    Convert.ToInt32(dRow[2])) + "(base 16)"); //show output in decimal and hex
+                    Convert.ToInt32(dRow[2])) + "(base 16)"); 
                 sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal (expected):", dRow[3].ToString());
                 sw.WriteLine("{0,-30} {1,-64}", "ASCII (expected):", dRow[4].ToString());
-                sw.WriteLine("{0,-30} {1,-64}", "Mime:", dRow[5].ToString()); //added mime
-
-                //if (dRow[0].ToString() == "low")
-                //{
-                //    sw.WriteLine("{0,-30} {1,-64}", "Hexadecimal at Offset:" + dRow[2].ToString() + ":", dRow[6].ToString());
-                //    sw.WriteLine("{0,-30} {1,-64}", "ASCII at Offset:" + dRow[2].ToString() + ":", dRow[7].ToString());
-
-                //}
+                sw.WriteLine("{0,-30} {1,-64}", "Mime:", dRow[5].ToString()); 
                 sw.WriteLine($"\nAdditional file signature entries for '{dRow[1]}' with hexadecimal value '{dRow[3]}' were found within the current file");
-
                 sw.WriteLine("{0,-30} {1,-64}", "Located Offset\\s:", dRow[6].ToString());
                 sw.WriteLine("");
                 sw.WriteLine("");
@@ -273,13 +251,12 @@ namespace fh_res
         /// <param name="fileFullPath">Full path of the file to be analysed, evaluated and sorted (ascending)</param>
         /// <param name="signatureList">List containing the signatures.json file contents</param>
         /// <param name="fileOutputFullPath">OPTIONAL:  Full path of the file to which the results will be written.  Default to '-1' if no value is passed in the method call statement</param>
-        public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") //fileOutputFullPath is optional
+        public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") 
         {
             string fullHexString = String.Empty;
-            //Validate fileFullPath and fileOutputFullPath arguments
             try 
             {
-                if (!File.Exists(path: fileFullPath)) //this arg will must always exist
+                if (!File.Exists(path: fileFullPath)) 
                 {
                     throw new Exception($"File '{fileFullPath}' not found!!!");
                 }
@@ -294,7 +271,6 @@ namespace fh_res
                     if (File.Exists(fileOutputFullPath))
                     {
                         Random random = new();
-                        // Change fileOutputFullPath to new name
                         fileOutputFullPath = Path.GetDirectoryName(fileOutputFullPath) + "\\" + Path.GetFileName(fileOutputFullPath)[..Path.GetFileName(fileOutputFullPath).IndexOf(".")] + "_fhgen_" + random.Next(10000)
                             + Path.GetFileName(fileOutputFullPath)[Path.GetFileName(fileOutputFullPath).IndexOf(".")..];
 
@@ -312,28 +288,24 @@ namespace fh_res
                 byte[] bytesFile;
                 int byteSize = 0;
 
-                using (FileStream fs = File.OpenRead(fileFullPath))//@argFilePath
+                using (FileStream fs = File.OpenRead(fileFullPath))
                 {
-                    byteSize = (int)fs.Length; //possible loss of data here FIX IT
+                    byteSize = (int)fs.Length; 
                     bytesFile = new byte[byteSize];
-                    fs.Read(bytesFile, 0, byteSize); //read header into bytesfile
+                    fs.Read(bytesFile, 0, byteSize); 
                     fs.Close();
                 }
 
-                fullHexString = BitConverter.ToString(bytesFile).Replace("-", "");  //Convert the byte file to its hex string representation and remove the - symbols
+                fullHexString = BitConverter.ToString(bytesFile).Replace("-", "");  
                 WriteFSRHeader($"Get possible file signature/s");
                 Console.WriteLine("***Note:  Use your favourite hex editor to view the byte sequence at the detected offset/s");
-                var queryResult = signatureList.Where(x => fullHexString.Contains(x.Hex)); //get all rows where JSON signature matches with a byte sequence in the file
-
+                var queryResult = signatureList.Where(x => fullHexString.Contains(x.Hex)); 
                 Console.WriteLine($"\nFile:  {fileFullPath}");
                 GetMoreFileDetails(fileFullPath: fileFullPath);
-
-                //int totalRecords = queryResult.Count();
                 int totalRecords = 0;
 
                 if (queryResult.Count() > 0)
                 {
-                    //Process query results and sort the results from high to low probability
                     DataTable sortedResultsDataTable;
                     sortedResultsDataTable = FetchResultsSortedAsc(signatureQuery: queryResult, hexString: fullHexString, fileFullPath: fileFullPath, signatureList: in signatureList).Copy();
 
@@ -341,12 +313,11 @@ namespace fh_res
 
                     Console.WriteLine($"\nTotal Matches Found:  {totalRecords}");
 
-                    //write output to file
-                    if (fileOutputFullPath == "-1") //output to screen
+                    if (fileOutputFullPath == "-1")
                     {
                         SendOutputToScreen(resultsDataTable: sortedResultsDataTable);
                     }
-                    else //output to file
+                    else 
                     {
                         SendOutputToFile(fileFullPath: fileFullPath, fileOutputFullPath: fileOutputFullPath, resultsDataTable: sortedResultsDataTable);
                     }
@@ -409,7 +380,7 @@ namespace fh_res
 
             using (FileStream fs = File.OpenRead(fileFullPath))
             {
-                fs.Position = startingHexOffSet; //offset to read from
+                fs.Position = startingHexOffSet; 
                 fs.Read(bytesFile, 0, lengthToRead);
                 fs.Close();
             }
@@ -427,22 +398,21 @@ namespace fh_res
             try
             {
                 string revertByte = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: signatureList[searchId - 1].Offset,
-                lengthToRead: Convert.FromHexString(signatureList[searchId - 1].Hex).Length); //last arg converts hex to byte then counts length FIX FromHexString see custompatch void String.Format("0x{0:X}"
+                lengthToRead: Convert.FromHexString(signatureList[searchId - 1].Hex).Length); 
                 Console.WriteLine($"Ensure you have backed up file {fileFullPath}");
                 Console.Write($"Confirm:  Write '{signatureList[searchId - 1].Hex}' (base 16) byte values matching extension '{signatureList[searchId - 1].Name}' " 
-                    + $"starting at Offset '{String.Format("0x{0:X}", signatureList[searchId - 1].Offset)}' (type y or n):"); //String.Format("0x{0:X}",Convert.ToInt32(signatureRow.Offset))  -- signatureList[searchId - 1].Offset
-                //TODO:  NEED TO CONVERT ALL PACTHING VALUES TO BASE 16
+                    + $"starting at Offset '{String.Format("0x{0:X}", signatureList[searchId - 1].Offset)}' (type y or n):"); 
                 if (Console.ReadKey().Key == ConsoleKey.Y)
                 {
                     using FileStream fs = File.OpenWrite(fileFullPath);
 
-                    fs.Position = signatureList[searchId - 1].Offset; //offset JSON IS DECIMAL THIS IS CORRECT ...changed to int64
-                    var data = signatureList[searchId - 1].Hex;//.Replace(" ", ""); 
+                    fs.Position = signatureList[searchId - 1].Offset; 
+                    var data = signatureList[searchId - 1].Hex;
                     byte[] buffer = Convert.FromHexString(data);
                     fs.Write(buffer, 0, buffer.Length);
                     Console.WriteLine("\nPatch Applied!!!");
-                    Console.WriteLine($"Use '{revertByte}' (base 16) byte values starting at offset {String.Format("0x{0:X}", signatureList[searchId - 1].Offset)} to revert back to the original byte sequence"); //signatureList[searchId - 1].Offset
-                    Console.WriteLine($"Command: -pc \"{fileFullPath}\" \"{revertByte}\" \"{String.Format("0x{0:X}", signatureList[searchId - 1].Offset)}\""); //signatureList[searchId - 1].Offset
+                    Console.WriteLine($"Use '{revertByte}' (base 16) byte values starting at offset {String.Format("0x{0:X}", signatureList[searchId - 1].Offset)} to revert back to the original byte sequence"); 
+                    Console.WriteLine($"Command: -pc \"{fileFullPath}\" \"{revertByte}\" \"{String.Format("0x{0:X}", signatureList[searchId - 1].Offset)}\""); 
                 }
                 else
                 {
@@ -465,23 +435,21 @@ namespace fh_res
         {
             try
             {
-                //revertByte is called again and again for different function...look at calling it once
                 string revertByte = ReadCustomByteRange(fileFullPath: fileFullPath, startingHexOffSet: Convert.ToInt32(startingHexOffSet, 16),
-                    lengthToRead: Convert.FromHexString(hexSequence.Replace("0x", "").Replace(" ", "")).Length); //last arg converts hex to byte then counts length
+                    lengthToRead: Convert.FromHexString(hexSequence.Replace("0x", "").Replace(" ", "")).Length); 
 
                 Console.WriteLine($"Ensure you have backed up file {fileFullPath}");
-                Console.Write($"Confirm:  Write '{hexSequence}' (base 16) byte values starting at Offset '{String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))}' (type y or n):"); //startingHexOffSet
+                Console.Write($"Confirm:  Write '{hexSequence}' (base 16) byte values starting at Offset '{String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))}' (type y or n):");
                 if (Console.ReadKey().Key == ConsoleKey.Y)
                 {
                     using FileStream fs = File.OpenWrite(fileFullPath);
-
-                    fs.Position = Convert.ToInt32(startingHexOffSet, 16); //offset WRONG CHECK THE OFFSET IN THE JSON IS IT HEX OR DECIMAL...changed to int64
+                    fs.Position = Convert.ToInt32(startingHexOffSet, 16); 
                     var data = hexSequence.Replace("0x", "").Replace(" ", "");
                     byte[] buffer = Convert.FromHexString(data);
                     fs.Write(buffer, 0, buffer.Length);
                     Console.WriteLine("\nPatch Applied!!!");
-                    Console.WriteLine($"Use '{revertByte}' (base 16) byte values starting at offset {String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))} to revert back to the original byte sequence"); //startingHexOffSet
-                    Console.WriteLine($"Command: -pc \"{fileFullPath}\" \"{revertByte}\" \"{String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))}\"");//startingHexOffSet
+                    Console.WriteLine($"Use '{revertByte}' (base 16) byte values starting at offset {String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))} to revert back to the original byte sequence"); 
+                    Console.WriteLine($"Command: -pc \"{fileFullPath}\" \"{revertByte}\" \"{String.Format("0x{0:X}", Convert.ToInt32(startingHexOffSet, 16))}\"");
                 }
                 else
                 {
@@ -509,7 +477,7 @@ namespace fh_res
                 byte[] buffer = new byte[customSize];
 
                 using FileStream fs = File.OpenRead(fileFullPath);
-                fs.Position = Convert.ToInt32(startingHexOffSet, 16); //offset to read from
+                fs.Position = Convert.ToInt32(startingHexOffSet, 16); 
                 fs.Read(buffer, 0, customSize);
                 using FileStream fs1 = File.OpenWrite(fileOutputFullPath);
                 {
@@ -526,10 +494,9 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Returns a complete list of known file signatures from the signatures.json file
+        /// Returns a string that represents the first few lines that are written to the windows console
         /// </summary>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
-        
+        /// <param name="moduleName">Represents the name of 'FILE SIGNATURE RESOLVER v1.0  (BETA)' command module that was executed</param>
         public static void WriteFSRHeader(string moduleName)
         {
             Console.WriteLine("\n------------------------------------------------------------------------------------------------------------------------------------------------");
@@ -542,6 +509,10 @@ namespace fh_res
             Console.WriteLine($"\nModule:  {moduleName}");
         }
 
+        /// <summary>
+        /// Returns a complete list of known file signatures from the signatures.json file
+        /// </summary>
+        /// <param name="signatureList">List containing the signatures.json file contents</param>
         public static void DisplayHeaders(in List<Signature> signatureList)
         {
             try
@@ -579,7 +550,7 @@ namespace fh_res
                 {
                     WriteFSRHeader($"Display Existing File Signatures (Matched by Extension:  {searchExtKeyWord})");
                     Console.WriteLine($"\nTotal File Signatures:  {signature1}");
-                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Name.ToLower().Contains(searchExtKeyWord.ToLower())))) //Convert all input to lowercase for searching
+                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Name.ToLower().Contains(searchExtKeyWord.ToLower())))) 
                     {
                         Console.WriteLine("\n{0,-20} {1,-120}", "ID:", tempSignature.Id);
                         Console.WriteLine("{0,-20} {1,-120}", "Extension:", tempSignature.Name);
@@ -612,7 +583,7 @@ namespace fh_res
                 {
                     WriteFSRHeader($"Display Existing File Signatures (Matched by Byte Sequence:  {searchHexKeyWord})");
                     Console.WriteLine($"\nTotal File Signatures:  {signature1}");
-                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Hex.ToLower().Contains(searchHexKeyWord.ToLower())))) //Convert all input to lowercase for searching
+                    foreach (Signature tempSignature in signatureList.FindAll(x => (x.Hex.ToLower().Contains(searchHexKeyWord.ToLower())))) 
                     {
                         Console.WriteLine("\n{0,-20} {1,-120}", "ID:", tempSignature.Id);
                         Console.WriteLine("{0,-20} {1,-120}", "Extension:", tempSignature.Name);
