@@ -304,7 +304,7 @@ namespace fh_res
                 GetMoreFileDetails(fileFullPath: fileFullPath);
                 int totalRecords = 0;
 
-                if (queryResult.Count() > 0)
+                if (queryResult.Any())
                 {
                     DataTable sortedResultsDataTable;
                     sortedResultsDataTable = FetchResultsSortedAsc(signatureQuery: queryResult, hexString: fullHexString, fileFullPath: fileFullPath, signatureList: in signatureList).Copy();
@@ -570,6 +570,28 @@ namespace fh_res
         }
 
         /// <summary>
+        /// Remove hex identifiers and spaces from the hex string to be searched
+        /// </summary>
+        /// <param name="searchHexKeyWord">File header (hexadecimal value) to be searched</param>
+        private static void SanitizeHex(ref string searchHexKeyWord)
+        {
+            if (searchHexKeyWord.Contains("0x", StringComparison.CurrentCulture))
+            {
+                string formattedHexKeyWord = string.Empty;
+                string[] testStr = searchHexKeyWord.Split("0x", StringSplitOptions.RemoveEmptyEntries);
+                foreach (string testStr2 in testStr)
+                {
+                    formattedHexKeyWord += testStr2;
+                }
+                searchHexKeyWord = formattedHexKeyWord.Replace(" ", ""); //cater for residual spaces
+            }
+            else if (searchHexKeyWord.Contains(' ', StringComparison.CurrentCulture))
+            {
+                searchHexKeyWord = searchHexKeyWord.Replace(" ", ""); 
+            }
+        }
+
+        /// <summary>
         /// Returns a list of known file signatures, from the signatures.json file, that are associated with a specified header (hexadecimal value) 
         /// </summary>
         /// <param name="searchHexKeyWord">File header (hexadecimal value) to be searched</param>
@@ -578,6 +600,7 @@ namespace fh_res
         {
             try
             {
+                SanitizeHex(ref searchHexKeyWord);
                 int signature1 = signatureList.FindAll(x => x.Hex.ToLower().Contains(searchHexKeyWord.ToLower())).Count;
                 if (signature1 > 0)
                 {
