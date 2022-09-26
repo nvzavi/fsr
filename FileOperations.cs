@@ -16,11 +16,11 @@ namespace fh_res
     static class FileOperations
     {
         /// <summary>
-        /// Load the signatures.json file into a type List 
+        /// Load the extensions.json file into a type List 
         /// </summary>
-        /// <param name="signatureListFilePath">Full path to the signatures.json file</param>
-        /// <param name="signatureList">List into which the signatures.json file is loaded</param>
-        public static void LoadJson(string signatureListFilePath, ref List<Signature> signatureList)
+        /// <param name="signatureListFilePath">Full path to the extensions.json file</param>
+        /// <param name="signatureList">List into which the extensions.json file is loaded</param>
+        public static void LoadJson(string signatureListFilePath, in List<Signature> signatureList)
         {
             try
             {
@@ -99,7 +99,7 @@ namespace fh_res
         /// <param name="signatureQuery">List from which the records will be evaluated and sorted</param>
         /// <param name="hexString">Hexadecimal string that is used for identifying matching records</param>
         /// <param name="fileFullPath">File within which the containing byte sequence will analysed</param>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="signatureList">List containing the extensions.json file contents</param>
         /// <returns>Evaluated and sorted resultset</returns>
         private static DataTable FetchResultsSortedAsc(IEnumerable<Signature> signatureQuery, string hexString, string fileFullPath, in List<Signature> signatureList)
         {
@@ -242,7 +242,7 @@ namespace fh_res
         /// <para>If the OPTIONAL parameter 'fileOutputFullPath' is not passed when calling this method, a default value (-1) is passed and the results will be written to the console window.</para>
         /// </summary>
         /// <param name="fileFullPath">Full path of the file to be analysed, evaluated and sorted (ascending)</param>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="signatureList">List containing the extensions.json file contents</param>
         /// <param name="fileOutputFullPath">OPTIONAL:  Full path of the file to which the results will be written.  Default to '-1' if no value is passed in the method call statement</param>
         public static void GetFileType(string fileFullPath, in List<Signature> signatureList, string fileOutputFullPath = "-1") 
         {
@@ -378,11 +378,11 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Patch a specified file with a selected hexadecimal sequence from the signatures.json file
+        /// Patch a specified file with a selected hexadecimal sequence from the extensions.json file
         /// </summary>
         /// <param name="fileFullPath">Full path of the file in which the hexadecimal values will be patched</param>
-        /// <param name="searchId">ID associated with a specific file type's attributes, offset and hexadecimal sequence that is located within the signatures.json file</param>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="searchId">ID associated with a specific file type's attributes, offset and hexadecimal sequence that is located within the extensions.json file</param>
+        /// <param name="signatureList">List containing the extensions.json file contents</param>
         public static void PatchBytes(string fileFullPath, int searchId, in List<Signature> signatureList) 
         {
             try
@@ -503,9 +503,9 @@ namespace fh_res
         }
 
         /// <summary>
-        /// Returns a complete list of known file signatures from the signatures.json file
+        /// Returns a complete list of known file signatures from the extensions.json file
         /// </summary>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="signatureList">List containing the extensions.json file contents</param>
         public static void DisplayHeaders(in List<Signature> signatureList)
         {
             try
@@ -533,7 +533,7 @@ namespace fh_res
         /// Returns a list of file signatures, from the extensions.json file, in which the specified file extension is contained within the JSON extension key/value pair
         /// </summary>
         /// <param name="searchExtKeyWord">File extension to be searched</param>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="signatureList">List containing the extensions.json file contents</param>
         public static void DisplayHeadersSearchByExtension(string searchExtKeyWord, in List<Signature> signatureList)
         {
             try
@@ -588,7 +588,7 @@ namespace fh_res
         /// Returns a list of file signatures, from the extensions.json file, in which the specified byte sequence is contained within the related JSON signature (signs) key/value pair
         /// </summary>
         /// <param name="searchHexKeyWord">File header (hexadecimal value) to be searched</param>
-        /// <param name="signatureList">List containing the signatures.json file contents</param>
+        /// <param name="signatureList">List containing the extensions.json file contents</param>
         public static void DisplayHeadersSearchByHex(string searchHexKeyWord, in List<Signature> signatureList)
         {
             try

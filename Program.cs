@@ -23,7 +23,7 @@ from https://github.com/qti3e (Specific gist https://gist.github.com/Qti3e/63412
 
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\extensions.json";
 List<Signature> signature = new();
-FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: ref signature);
+FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: in signature);
 
 switch (args[0])
 {
