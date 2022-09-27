@@ -5,3 +5,7 @@ Properties/
 # Ignore Obj Folder 
 
 obj/
+
+# Ignore pdb files 
+
+*.pdb
