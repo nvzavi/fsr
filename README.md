@@ -185,3 +185,11 @@ Examples:
 > <br/>Command:  `fsr -fh C:\folder\fileName.docx sha384`
 > <br/>Command:  `fsr -fh C:\folder\fileName.docx sha512`
 > <br/>Command:  `fsr -fh C:\folder\fileName.docx all`
+
+<h2>NOTE</h2>  
+
+This is a beta version, I am still testing. Furthermore kindly note that I am not responsible for any damages to your files (if any) i.e. after running the tool.  Best to keep\make a backup of the file prior to running this tool. 
+
+<h3>Use at your own risk</h3> 
+
+Thanks
