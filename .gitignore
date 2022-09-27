@@ -1,0 +1,7 @@
+# Ignore Properties Folder 
+
+Properties/
+
+# Ignore Obj Folder 
+
+obj/
