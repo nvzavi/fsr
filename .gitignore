@@ -6,6 +6,11 @@ Properties/
 
 obj/
 
+# Ignore bin Folder 
+
+bin/
+
 # Ignore pdb files 
 
 *.pdb
+
