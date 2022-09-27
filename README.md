@@ -1,8 +1,9 @@
 # File Signature Resolver (fsr) BETA
+This is a small project that I am working on in my free time.  I wanted a tool to quickly patch headers (that may have been manipulated for malicious intent) with the correct signatures, and so this application came about. It is intended that this application should assist in understanding the correct file type, of a specified file, and provide additional insight that can possibly help and complement other file analysis steps/procedures.
 
-Thanks to [@qti3e](https://github.com/qti3e) for supplying the extensions database in JSON. I use this JSON file as the reference database for this tool and it can be found  [here.](https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)
+Thanks to [@qti3e](https://github.com/qti3e) for supplying the extensions database in JSON (file name 'extensions.json'). I use this JSON file as the reference database for this tool and it can be found  [here.](https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b) Copy the 'extensions.json' file to the respective build directory (Debug/net6.0 or Release/net6.0) and everything should be fine to test the solution.
 
-This is a small personal project, a windows console tool that automates some of the manual tasks of reviewing/analysing/updating a specified file's signature and overall structure/contents.
+To summarize, its a .net6 C#10 windows console application that automates some of the manual tasks of reviewing/analysing/updating a specified file's signature and overall structure/contents.
 * The following tasks are automated *(based on your selected usage argument)*:  
   * Lookup the file signature of various file types that is contained within the accompanying JSON file
   * Quickly Identify the file signature that might by associated with a specified file 
@@ -47,7 +48,7 @@ Offset (expected) | Starting offset of the file signature (byte sequence) for th
 Hexadecimal (expected) | Signature byte sequence, for the above extension, as contained within the JSON file.. *(Displayed as a hexadecimal (base 16) value.)* 
 ASCII (expected) | ASCII representation of the 'Hexadecimal (expected)' field
 MIME | File MIME type,  for the above extension,  as contained within the JSON file
-Located Offset/s | Starting offset/s, within the file that was passed as an argument, at which the above mentioned file signature 'Hexadecimal (expected)' value have been located. <br/><br/> An identical match occurs when a file signature's 'Hexadecimal (expected)' value and 'Offset (expected)' value matches with the file's (passed as an argument) byte sequence and offset.  In the event of an identical match, the string value '<--match' is placed alongside the matched offset.
+Located Offset/s | Starting offset/s, within the file that was passed as an argument, at which the above mentioned file signature 'Hexadecimal (expected)' value have been located. <br/><br/> An identical match occurs when a file signature's 'Hexadecimal (expected)' value and 'Offset (expected)' value matches with the file's (passed as an argument) byte sequence and offset.  In the event of an identical match, the string value '<--match' is placed alongside the matched offset.  <br/><br/>  If multiple matches (in terms of the byte sequence at various offset) occurs, then a '***' is placed at the end of the string. 
 
 Examples: 
 --------
@@ -183,3 +184,4 @@ Examples:
 > <br/>Command:  `fsr -fh C:\folder\fileName.docx sha256`
 > <br/>Command:  `fsr -fh C:\folder\fileName.docx sha384`
 > <br/>Command:  `fsr -fh C:\folder\fileName.docx sha512`
+> <br/>Command:  `fsr -fh C:\folder\fileName.docx all`
