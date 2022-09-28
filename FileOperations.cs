@@ -25,21 +25,21 @@ namespace fh_res
             try
             {
                 List<StagingSignature> stagingSignature = new();
-                using StreamReader r = new(signatureListFilePath);
-                string json = r.ReadToEnd(); 
-                var jo = JObject.Parse(json); 
-                foreach (var kv in jo)
+                using StreamReader sReader = new(signatureListFilePath);
+                string readString = sReader.ReadToEnd(); 
+                var signObject = JObject.Parse(readString); 
+                foreach (var keyValuePair in signObject)
                 {
-                    if (kv.Value != null)
+                    if (keyValuePair.Value != null)
                     {
-                        var deserializable = kv.Value.ToString(); 
+                        var deserializable = keyValuePair.Value.ToString(); 
 
-                        if (kv.Key != null) 
+                        if (keyValuePair.Key != null) 
                         {
                             var sign = JsonConvert.DeserializeObject<StagingSignature>(deserializable);
                             if (sign != null)
                             {
-                                sign.Name = kv.Key;
+                                sign.Name = keyValuePair.Key;
                                 stagingSignature.Add(new StagingSignature(sign.Name, sign.Signs, sign.Mime));
                             }
                         }
@@ -49,15 +49,15 @@ namespace fh_res
                 int stagingCounter = 1;
                 foreach (StagingSignature signs in stagingSignature)
                 {
-                    foreach (var val in signs.Signs) 
+                    foreach (var stringValue in signs.Signs) 
                     {
-                        int offset = Convert.ToInt32(val[..val.IndexOf(',')]); 
-                        string hexValue = val[(val.IndexOf(',') + 1)..];
+                        int offset = Convert.ToInt32(stringValue[..stringValue.IndexOf(',')]); 
+                        string hexValue = stringValue[(stringValue.IndexOf(',') + 1)..];
                         signatureList.Add(new Signature(stagingCounter, signs.Name, offset, hexValue, signs.Mime));
                         stagingCounter++;
                     }
                 }
-                r.Close();
+                sReader.Close();
             }
             catch (Exception ex)
             {

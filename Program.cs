@@ -18,12 +18,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 
-/*really cool extensions.json file is used as my reference database and it was retreived
+/*really cool 'extensions.json' file is used as my reference database and it was retreived
 from https://github.com/qti3e (Specific gist https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)*/
-
+//Place the 'extensions.json' file (retrieved from the link above) in the respective build directory.
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\extensions.json";
 List<Signature> signature = new();
-FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: in signature);
+FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: in signature);//  Load the 'extensions.json' file
 
 switch (args[0])
 {
