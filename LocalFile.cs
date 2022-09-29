@@ -62,60 +62,40 @@ namespace fh_res
             return Path.GetFileName(FullPath);
         }
 
-        public string GetMD5Hash()
+        public string GetMD5Hash()//Thanks and credit to João Sousa post on the MSDN forum for this method on hashing
         {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(FullPath))
-                {
-                    return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
-                }
-            }
+            using var md5 = MD5.Create();
+            using var stream = File.OpenRead(FullPath);
+            return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
         }
 
 
         public string GetSHA1Hash()
         {
-            using (var sha = SHA1.Create())
-            {
-                using (var stream = File.OpenRead(FullPath))
-                {
-                    return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", string.Empty);
-                }
-            }
+            using var sha1 = SHA1.Create();
+            using var stream = File.OpenRead(FullPath);
+            return BitConverter.ToString(sha1.ComputeHash(stream)).Replace("-", string.Empty);
         }
 
         public string GetSHA256Hash()
         {
-            using (var sha = SHA256.Create())
-            {
-                using (var stream = File.OpenRead(FullPath))
-                {
-                    return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", string.Empty);
-                }
-            }
+            using var sha256 = SHA256.Create();
+            using var stream = File.OpenRead(FullPath);
+            return BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", string.Empty);
         }
 
         public string GetSHA384Hash()
         {
-            using (var sha = SHA384.Create())
-            {
-                using (var stream = File.OpenRead(FullPath))
-                {
-                    return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", string.Empty);
-                }
-            }
+            using var sha384 = SHA384.Create();
+            using var stream = File.OpenRead(FullPath);
+            return BitConverter.ToString(sha384.ComputeHash(stream)).Replace("-", string.Empty);
         }
 
         public string GetSHA512Hash()
         {
-            using (var sha = SHA512.Create())
-            {
-                using (var stream = File.OpenRead(FullPath))
-                {
-                    return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", string.Empty);
-                }
-            }
+            using var sha512 = SHA512.Create();
+            using var stream = File.OpenRead(FullPath);
+            return BitConverter.ToString(sha512.ComputeHash(stream)).Replace("-", string.Empty);
         }
 
     }
