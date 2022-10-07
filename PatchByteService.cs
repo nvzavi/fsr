@@ -36,7 +36,7 @@ namespace fsr
             {
                 RevertByteString = GenericByteOperations.ReadCustomByteRange(fileFullPath: FileFullPath,
                     startingHexOffSet: SignatureList[SearchID - 1].Offset,
-                    lengthToRead: Convert.FromHexString(SignatureList[SearchID - 1].Hex).Length); //duplicated
+                    lengthToRead: Convert.FromHexString(SignatureList[SearchID - 1].Hex).Length); 
 
                 Console.WriteLine($"\nEnsure you have backed up file {FileFullPath}");
                 Console.Write($"Confirm:  Write '{SignatureList[SearchID - 1].Hex}' (base 16) byte values matching " +
