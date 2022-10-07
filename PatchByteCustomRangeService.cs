@@ -36,7 +36,7 @@ namespace fsr
             {
                  RevertByteString = GenericByteOperations.ReadCustomByteRange(fileFullPath: FileFullPath,
                     startingHexOffSet: Convert.ToInt32(StartingHexOffset, 16),
-                    lengthToRead: Convert.FromHexString(HexSequence.Replace("0x", "").Replace(" ", "")).Length); //duplicated
+                    lengthToRead: Convert.FromHexString(HexSequence.Replace("0x", "").Replace(" ", "")).Length); 
 
                 Console.WriteLine($"\nEnsure you have backed up file {FileFullPath}");
                 Console.Write($"Confirm:  Write '{HexSequence}' (base 16) byte values starting at Offset '{String.Format("0x{0:X}", Convert.ToInt32(StartingHexOffset, 16))}' (type y or n):");
