@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Security.Cryptography;
-using Newtonsoft.Json.Linq;
-using System.Globalization;
-using System.Threading.Tasks.Sources;
-using System.Diagnostics;
-
-namespace fh_res
+namespace fsr
 {
     /// <summary>
     /// Represents a file object from which specific object instance attribute information can be attained/processed.
     /// </summary>
-    class LocalFile 
+    public class LocalFile
     {
         public string FullPath { get; set; }
         public string Name { get; }
@@ -37,23 +31,23 @@ namespace fh_res
 
         private long GetFileSize()
         {
-            long fileSize = new System.IO.FileInfo(FullPath).Length; 
+            long fileSize = new System.IO.FileInfo(FullPath).Length;
             return fileSize;
         }
 
         private DateTime GetCreatedDate()
         {
-            DateTime fileCreatedDate = new System.IO.FileInfo(FullPath).CreationTime; 
+            DateTime fileCreatedDate = new System.IO.FileInfo(FullPath).CreationTime;
             return fileCreatedDate;
         }
         private DateTime GetLastModifiedDate()
         {
-            DateTime fileLastModifiedDate = new System.IO.FileInfo(FullPath).LastWriteTime; 
+            DateTime fileLastModifiedDate = new System.IO.FileInfo(FullPath).LastWriteTime;
             return fileLastModifiedDate;
         }
         private DateTime GetLastAccessed()
         {
-            DateTime fileLastAccessed = new System.IO.FileInfo(FullPath).LastAccessTime; 
+            DateTime fileLastAccessed = new System.IO.FileInfo(FullPath).LastAccessTime;
             return fileLastAccessed;
         }
 

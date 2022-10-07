@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fh_res
+namespace fsr
 {
     /// <summary>
     /// Represents the final file signature object into which the object data is loaded from the signature staging area (StagingSignature.cs)

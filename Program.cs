@@ -12,18 +12,28 @@ using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using fh_res;
+using fsr;
 using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 
 /*really cool 'extensions.json' file is used as my reference database and it was retreived
-from https://github.com/qti3e (Specific gist https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b)*/
+from https://github.com/qti3e (Specific gist https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b )*/
 //Place the 'extensions.json' file (retrieved from the link above) in the respective build directory.
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\extensions.json";
-List<Signature> signature = new();
-FileOperations.LoadJson(signatureListFilePath: signatureFilePath, signatureList: in signature);//  Load the 'extensions.json' file
+List<Signature> signature;
+
+JsonService jsonService = new (signatureFilePath);
+
+if (!jsonService.ValidJSON()) //validate if the JSON file schema is aligned to the structure provided by https://github.com/qti3e 
+{
+    Console.WriteLine($"JSON File : '{signatureFilePath}' is invalid.");
+    Environment.Exit(0);
+}
+
+signature = jsonService.LoadJson();//  Load the 'extensions.json' file
+
 
 switch (args[0])
 {
@@ -72,37 +82,72 @@ switch (args[0])
         Console.WriteLine("--------------------------------------------------------------------------------------------------------------------------------------------------------");
         break;
     case "-ft"://file type
-        if (args.Length==2) { FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature); }
-        else if (args.Length== 3) { FileOperations.GetFileType(fileFullPath: args[1], signatureList: in signature, fileOutputFullPath: args[2]); }
+        if (args.Length==2) 
+        {
+            FileTypeService fileTypeService = new(fileFullPath: args[1], signatureList: in signature);
+            Console.WriteLine(fileTypeService.WriteFSRHeader($"Get possible file signature/s")); 
+            fileTypeService.GetFileType();
+        }
+        else if (args.Length== 3) 
+        {
+            FileTypeService fileTypeService = new(fileFullPath: args[1], signatureList: in signature, fileOutputFullPath: args[2]);
+            Console.WriteLine(fileTypeService.WriteFSRHeader($"Get possible file signature/s")); 
+            fileTypeService.GetFileType();
+        }
         else { goto default; }
         break;
     case "-pb"://patch  byte/s
         if (args.Length == 3)
         {
-            FileOperations.PatchBytes(fileFullPath: args[1], searchId: Convert.ToInt32(args[2]), signatureList: in signature);
+            PatchByteService patchByteService = new(fileFullPath: args[1], searchId: Convert.ToInt32(args[2]), signatureList: in signature);
+            Console.WriteLine(patchByteService.WriteFSRHeader("Patch byte/s (File Signature ID Association)")); 
+            patchByteService.PatchBytes();
+            if (patchByteService.IsPatchSuccessfull()) { patchByteService.PrintRevertByteOptions(); }
         }
         else { goto default; }
         break;
     case "-pc"://patch custom byte/s
         if (args.Length==4)
         {
-            FileOperations.PatchBytesCustomRange(fileFullPath: args[1], hexSequence: args[2], startingHexOffSet: args[3]);
+            PatchByteCustomRangeService patchByteCustomRangeService = new(fileFullPath: args[1], hexSequence: args[2], startingHexOffSet: args[3]);
+            Console.WriteLine(patchByteCustomRangeService.WriteFSRHeader("Patch byte/s (Custom byte/s sequence)")); 
+            patchByteCustomRangeService.PatchBytes();
+            if (patchByteCustomRangeService.IsPatchSuccessfull()) { patchByteCustomRangeService.PrintRevertByteOptions(); }
         }
         else { goto default; }     
         break;
     case "-cb"://carve byte/s  
         if (args.Length == 5)
         {
-            FileOperations.ByteCarverByOffsets(fileFullPath: args[1], startingHexOffSet: args[2], endingHexOffSet: args[3], fileOutputFullPath: args[4]); 
+            ByteCarvingService byteCarvingService = new(fileFullPath: args[1], startingHexOffSet: args[2], endingHexOffSet: args[3], fileOutputFullPath: args[4]);
+            Console.WriteLine(byteCarvingService.WriteFSRHeader("Carve byte/s sequence")); 
+            byteCarvingService.CarveBytes(); 
         }
         else { goto default; }
         break;
     case "-dh"://display header
-        if (args.Length == 1) { FileOperations.DisplayHeaders(signatureList: in signature); }
+        if (args.Length == 1) 
+        {
+            DatabaseQueryService databaseQueryService = new(signatureList: in signature);
+            Console.WriteLine(databaseQueryService.WriteFSRHeader("Display Existing File Signatures")); 
+            databaseQueryService.DisplayHeaders(); 
+        }
         else if (args.Length == 3)
         {
-            if (args[1] == "--search-ext") { FileOperations.DisplayHeadersSearchByExtension(searchExtKeyWord: args[2], signatureList: in signature); } 
-            else if (args[1] == "--search-hex") { FileOperations.DisplayHeadersSearchByHex(searchHexKeyWord: args[2], signatureList: in signature); } 
+            if (args[1] == "--search-ext")
+            {
+                DatabaseQueryService databaseQueryService = new(searchExtKeyWord: args[2], string.Empty, signatureList: in signature);
+                Console.WriteLine(databaseQueryService.WriteFSRHeader($"Display Existing File Signatures (Matched where extension '{args[2]}' is " +
+                        $"contained within the known 'Extension' values)")); 
+                databaseQueryService.DisplayHeadersSearchByExtension();
+            }
+            else if (args[1] == "--search-hex")
+            {
+                DatabaseQueryService databaseQueryService = new(string.Empty, searchHexKeyWord: args[2], signatureList: in signature);
+                Console.WriteLine(databaseQueryService.WriteFSRHeader($"Display Existing File Signatures (Matched where byte sequence '{args[2]}' " +
+                        $"is contained within the known values at the required offset)")); 
+                databaseQueryService.DisplayHeadersSearchByHex(); 
+            } 
             else { goto default; }
         }
         else { goto default; }
@@ -110,7 +155,9 @@ switch (args[0])
     case "-fh"://file hash
         if (args.Length==3)
         {
-            FileOperations.DisplayFileHash(fileFullPath: args[1], hashType: args[2]);
+            FileHashingService fileHashingService = new(fileFullPath: args[1], hashingType: args[2]);
+            Console.WriteLine(fileHashingService.WriteFSRHeader("Display file hash")); 
+            fileHashingService.DisplayFileHash();
         }
         else { goto default; }
         break;

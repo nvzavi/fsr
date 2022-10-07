@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fh_res
+namespace fsr
 {
     /// <summary>
     /// Represents the staging signature object, into which the original file signature data, from the signatures.json file, is loaded.
@@ -19,7 +19,7 @@ namespace fh_res
         public StagingSignature(string name, List<string> signs, string mime)
         {
             Name = name;
-            Signs = signs;    
+            Signs = signs;
             Mime = mime;
         }
     }

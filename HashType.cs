@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fh_res
+namespace fsr
 {
     /// <summary>
     /// List of hashing algorithms
