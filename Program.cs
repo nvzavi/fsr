@@ -22,8 +22,15 @@ using Newtonsoft.Json.Linq;
 from https://github.com/qti3e (Specific gist https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b )*/
 //Place the 'extensions.json' file (retrieved from the link above) in the respective build directory.
 string signatureFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\extensions.json";
-List<Signature> signature;
 
+if (!File.Exists(signatureFilePath))
+{
+    Console.WriteLine("Error: The required reference database file 'extensions.json' was not found!!!\nPlease follow the path stated in the README and retrieve the latest 'extensions.json' file," +
+        "\nthereafter copy the 'extensions.json' file to the respective directory in which the fsr application is located.");
+    Environment.Exit(0);
+}
+
+List<Signature> signature;
 JsonService jsonService = new (signatureFilePath);
 
 if (!jsonService.ValidJSON()) //validate if the JSON file schema is aligned to the structure provided by https://github.com/qti3e 
@@ -33,7 +40,6 @@ if (!jsonService.ValidJSON()) //validate if the JSON file schema is aligned to t
 }
 
 signature = jsonService.LoadJson();//  Load the 'extensions.json' file
-
 
 switch (args[0])
 {
